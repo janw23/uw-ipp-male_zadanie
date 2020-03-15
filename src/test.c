@@ -3,24 +3,40 @@
 #include <assert.h>
 #include "dataholder.h"
 
-static inline DataHolderError check(DataHolderError err)
+void printFound(char *name, int found)
 {
-    if(err != DATAHOLDER_ERR_SUCCESS)
-        printf("DataHolder error encourtered with code: %d\n", err);
-
-    assert(err == DATAHOLDER_ERR_SUCCESS);
-    return err;
+    printf("Entry of name %s %s found\n", name, found ? "" : "not");
 }
 
 int main()
 {
     DataHolder dataHolder = NULL;
-    check( dataHolderCreate(&dataHolder) );
+    dataHolderCreate(&dataHolder);
 
     printf("Created a new DataHolder\n");
     printf("Its length: %d\n", getLength(dataHolder));
 
-    check( dataHolderAddEntry(dataHolder, "Entry1") );
+    dataHolderAddEntry(dataHolder, "Entry1");
+    dataHolderAddEntry(dataHolder, "Entry2");
+    dataHolderAddEntry(dataHolder, "Entry3");
 
-    check( dataHolderDestroy(dataHolder) );
+    DataHolder found;
+
+    found = dataHolderFindEntry(dataHolder, "Entry1");
+    printFound("Entry1", found != NULL);
+
+    found = dataHolderFindEntry(dataHolder, "Entry3");
+    printFound("Entry3", found != NULL);
+
+    dataHolderRemoveEntry(dataHolder, "Entry3");
+
+    found = dataHolderFindEntry(dataHolder, "Entry3");
+    printFound("Entry3", found != NULL);
+
+    found = dataHolderFindEntry(dataHolder, "Entry69420");
+    printFound("Entry69420", found != NULL);
+
+
+
+    dataHolderDestroy(dataHolder);
 }

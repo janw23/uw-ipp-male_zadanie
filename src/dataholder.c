@@ -1,5 +1,6 @@
 #include "dataholder.h"
 #include <stdlib.h>
+#include <assert.h>
 
 #define DATAHOLDER_INITIAL_LENGTH_MAX 100
 
@@ -14,10 +15,9 @@ struct DataEntry
 
 //Tworzy pointer na nowy DataHolder w miejscu
 //wskazywanym przez podany pusty pointer
-DataHolderError dataHolderCreate(DataHolder *dataHolderPtr)
+void dataHolderCreate(DataHolder *dataHolderPtr)
 {
-    if(*dataHolderPtr != NULL)
-        return DATAHOLDER_ERR_PTR_NOT_NULL;
+    assert(*dataHolderPtr == NULL);
 
     *dataHolderPtr = malloc(sizeof(struct DataEntry));
 
@@ -26,56 +26,76 @@ DataHolderError dataHolderCreate(DataHolder *dataHolderPtr)
 
     (*dataHolderPtr)->subHoldersArrayLengthMax = DATAHOLDER_INITIAL_LENGTH_MAX;
     (*dataHolderPtr)->subHoldersArrayLength = 0;
-
-    return *dataHolderPtr!= NULL ?
-            DATAHOLDER_ERR_SUCCESS : DATAHOLDER_ERR_PTR_IS_NULL;
 }
 
-DataHolderError dataHolderDestroy(DataHolder dataHolder)
+void dataHolderDestroy(DataHolder dataHolder)
 {
     //Nie trzeba nic robić jeśli obiekt już nie istnieje
     if(dataHolder == NULL)
-        return DATAHOLDER_ERR_SUCCESS;
+        return;
 
     //Niszczenie podrzędnych DataHolderów
     for(int i = 0; i < dataHolder->subHoldersArrayLength; i++)
-    {
-        DataHolderError err =
-                dataHolderDestroy(dataHolder->subHoldersArray[i]);
-
-        if(err != DATAHOLDER_ERR_SUCCESS)
-            return err;
-    }
+         dataHolderDestroy(dataHolder->subHoldersArray[i]);
 
     free(dataHolder->subHoldersArray);
     free(dataHolder);
-
-    return DATAHOLDER_ERR_SUCCESS;
 }
 
-DataHolderError dataHolderAddEntry(DataHolder dataHolder, char *entryName)
+void dataHolderAddEntry(DataHolder dataHolder, char *entryName)
 {
     int subArrayLength = dataHolder->subHoldersArrayLength;
 
-    if(subArrayLength < dataHolder->subHoldersArrayLengthMax)
-    {
-        dataHolderCreate(&(dataHolder->subHoldersArray[subArrayLength]));
+    assert(subArrayLength < dataHolder->subHoldersArrayLengthMax);
 
-        dataHolder->subHoldersArray[subArrayLength]->name = entryName;
-        dataHolder->subHoldersArrayLength++;
-    }
-    else {
-        return DATAHOLDER_ERR_MEMORY_FULL;
-    }
+    dataHolderCreate(&(dataHolder->subHoldersArray[subArrayLength]));
 
-    return DATAHOLDER_ERR_SUCCESS;
+    dataHolder->subHoldersArray[subArrayLength]->name = entryName;
+    dataHolder->subHoldersArrayLength++;
 }
 
-DataHolderError dataHolderFindEntry(DataHolder dataHolder,
-                                    char* entryName,
-                                    DataHolder out)
+void swapDataHolders(DataHolder *holderA, DataHolder *holderB)
 {
+    DataHolder helpHolder = *holderA;
 
+    *holderA = *holderB;
+    *holderB = helpHolder;
+}
+
+void dataHolderRemoveEntry(DataHolder dataHolder, char *entryName)
+{
+    assert(dataHolder != NULL);
+
+    int subArrayLength = dataHolder->subHoldersArrayLength;
+
+    for(int i = 0; i < subArrayLength; i++)
+    {
+        if(dataHolder->subHoldersArray[i]->name == entryName)
+        {
+            swapDataHolders(&(dataHolder->subHoldersArray[i]),
+                    &(dataHolder->subHoldersArray[subArrayLength - 1]));
+
+            dataHolderDestroy(dataHolder->subHoldersArray[subArrayLength - 1]);
+            dataHolder->subHoldersArrayLength--;
+
+            return;
+        }
+    }
+}
+
+DataHolder dataHolderFindEntry(DataHolder dataHolder, char *entryName)
+{
+    assert(dataHolder != NULL);
+
+    int subArrayLength = dataHolder->subHoldersArrayLength;
+
+    for(int i = 0; i < subArrayLength; i++)
+    {
+        if(dataHolder->subHoldersArray[i]->name == entryName)
+            return dataHolder->subHoldersArray[i];
+    }
+
+    return NULL;
 }
 
 int getLength(DataHolder dataHolder)
