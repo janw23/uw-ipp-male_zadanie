@@ -14,8 +14,3 @@ void dataHolderAddEntry(DataHolder dataHolder, char *entryName);
 void dataHolderRemoveEntry(DataHolder dataHolder, char *entryName);
 
 DataHolder dataHolderFindEntry(DataHolder dataHolder, char* entryName);
-
-int getLength(DataHolder dataHolder);
-
-char *getName(DataHolder dataHolder);
-
