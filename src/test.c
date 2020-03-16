@@ -5,7 +5,7 @@
 
 void printFound(char *name, int found)
 {
-    printf("Entry of name %s %s found\n", name, found ? "" : "not");
+    printf("Entry of name %s%sfound\n", name, found ? " " : " not ");
 }
 
 int main()
@@ -37,6 +37,17 @@ int main()
     printFound("Entry69420", found != NULL);
 
 
+    found = dataHolderFindEntry(dataHolder, "Entry2");
+    printFound("Entry2", found != NULL);
+
+    dataHolderAddEntry(found, "SubEntry1");
+    dataHolderAddEntry(found, "SubEntry2");
+
+    found = dataHolderFindEntry(dataHolderFindEntry(dataHolder,
+            "Entry2"),
+                    "SubEntry2");
+
+    printFound("Entry2/SubEntry2", found != NULL);
 
     dataHolderDestroy(dataHolder);
 }

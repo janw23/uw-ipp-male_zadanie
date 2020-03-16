@@ -17,4 +17,5 @@ DataHolder dataHolderFindEntry(DataHolder dataHolder, char* entryName);
 
 int getLength(DataHolder dataHolder);
 
+char *getName(DataHolder dataHolder);
 

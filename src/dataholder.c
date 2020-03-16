@@ -102,3 +102,8 @@ int getLength(DataHolder dataHolder)
 {
     return dataHolder->subHoldersArrayLength;
 }
+
+char *getName(DataHolder dataHolder)
+{
+    return dataHolder->name;
+}
