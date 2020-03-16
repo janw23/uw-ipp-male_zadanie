@@ -1,5 +1,6 @@
 #include "dataholder.h"
 #include <stdlib.h>
+#include <string.h>
 #include <assert.h>
 
 #define DATAHOLDER_INITIAL_LENGTH_MAX 100
@@ -70,7 +71,7 @@ void dataHolderRemoveEntry(DataHolder dataHolder, char *entryName)
 
     for(int i = 0; i < subArrayLength; i++)
     {
-        if(dataHolder->subHoldersArray[i]->name == entryName)
+        if(strcmp(dataHolder->subHoldersArray[i]->name, entryName) == 0)
         {
             swapDataHolders(&(dataHolder->subHoldersArray[i]),
                     &(dataHolder->subHoldersArray[subArrayLength - 1]));
@@ -91,7 +92,7 @@ DataHolder dataHolderFindEntry(DataHolder dataHolder, char *entryName)
 
     for(int i = 0; i < subArrayLength; i++)
     {
-        if(dataHolder->subHoldersArray[i]->name == entryName)
+        if(strcmp(dataHolder->subHoldersArray[i]->name, entryName) == 0)
             return dataHolder->subHoldersArray[i];
     }
 

@@ -16,7 +16,7 @@ int main()
 
     printf("Created a new DataHolder\n");
 
-    handleCommand("Hello there", dataHolder);
+    handleCommand("PRINT", dataHolder);
 
     dataHolderDestroy(dataHolder);
 }

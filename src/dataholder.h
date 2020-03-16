@@ -3,6 +3,7 @@
 
 
 struct DataEntry;
+
 typedef struct DataEntry* DataHolder;
 
 void dataHolderCreate(DataHolder *dataHolderPtr);

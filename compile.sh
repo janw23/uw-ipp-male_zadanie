@@ -1,1 +1,4 @@
-gcc -Wall -Wextra -std=c11 src/forests.c -o bin/forests
+gcc -Wall -Wextra -g -std=c11 -c src/dataholder.c
+gcc -Wall -Wextra -g -std=c11 -c src/commandhandler.c
+gcc -Wall -Wextra -g -std=c11 -o bin/forests src/forests.c dataholder.o commandhandler.o
+rm *.o
