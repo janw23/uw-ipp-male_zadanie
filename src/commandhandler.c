@@ -7,8 +7,8 @@
 #define KNOWN_COMMAND_SEPARATORS_COUNT 5
 
 #define COMMAND_ARGS_COUNT_MAX 3
-#define COMMAND_LINE_IGNORE_CHARACTER '#'
-#define COMMAND_LINE_END_CHARACTER '\n'
+#define COMMAND_IGNORE_LINE_CHARACTER '#'
+#define COMMAND_END_LINE_CHARACTER '\n'
 
 #define COMMANDHANDLER_CMD_ADD 0
 #define COMMANDHANDLER_CMD_DEL 1
@@ -29,7 +29,23 @@ const Command knownCommands[KNOWN_COMMANDS_COUNT] =
          {"CHECK", COMMANDHANDLER_CMD_CHECK, NULL}};
 
 const char commandSeparators[KNOWN_COMMAND_SEPARATORS_COUNT] =
-        {',', '\t', '\v', '\f', '\r'};
+        {' ', '\t', '\v', '\f', '\r'};
+
+int isCharSeparator(char ch)
+{
+    for(int i = 0; i < KNOWN_COMMAND_SEPARATORS_COUNT; i++)
+    {
+        if(ch == commandSeparators[i])
+            return 1;
+    }
+
+    return 0;
+}
+
+int isCharValid(char ch)
+{
+    return ch >= 33 && ch != COMMAND_IGNORE_LINE_CHARACTER;
+}
 
 CommandHandlerError printInCaseOfError(CommandHandlerError err)
 {
@@ -44,7 +60,7 @@ void mallocStringArray(char ***arrayPtr, int elemMaxCount, int elemMaxLenght)
     *arrayPtr = malloc((elemMaxCount) * sizeof(char*));
 
     for(int i = 0; i <= COMMAND_ARGS_COUNT_MAX; i++)
-        (*arrayPtr)[i] = malloc(elemMaxLenght * sizeof(char));
+        (*arrayPtr)[i] = calloc(elemMaxLenght, sizeof(char));
 }
 
 void freeStringArray(char **array, int elemMaxCount)
@@ -55,12 +71,64 @@ void freeStringArray(char **array, int elemMaxCount)
     free(array);
 }
 
+//zwraca prawdę jeśli podany znak [ch] oznacza ignorowanie całej komendy
+//dzięki [validCharEncountered] ma efekt tylko jeśli nie wystąpił wcześniej
+// żaden inny niebiały znak
+int checkForIgnoreLineCharacter(char ch, int *validCharEncountered)
+{
+    if(isCharValid(ch))
+        *validCharEncountered = 1;
+
+    return *validCharEncountered == 0 && ch == COMMAND_IGNORE_LINE_CHARACTER;
+}
+
+//początkowa wartość wskazywana przez [componentIndex] powinna wynosić -1
+CommandHandlerError readNextCharOfCommand(char currentChar, char prevChar,
+        int *validCharEncountered, char **componentsArray,
+        int *componentIndex, int *componentCharIndex)
+{
+    //Sprawdzanie, czy wystąpił znak sygnalizujący ignorowanie linii
+    if(checkForIgnoreLineCharacter(currentChar, validCharEncountered))
+        return COMMANDHANDLER_ERR_IGNORE_LINE;
+
+    //rozpoczęcie kolejnego słowa
+    if(isCharSeparator(prevChar) && isCharValid(currentChar))
+    {
+        *componentIndex += 1;
+        *componentCharIndex = 0;
+
+        if(*componentIndex >= COMMAND_ARGS_COUNT_MAX + 1)
+            return COMMANDHANDLER_ERR_CMD_TOO_MANY_ARGUMENTS;
+
+        fprintf(stderr, "char = %c\n", currentChar);
+        fprintf(stderr, "componentIndex = %d\n", *componentIndex);
+        fprintf(stderr, "componentCharIndex = %d\n\n", *componentCharIndex);
+
+        componentsArray[*componentIndex][*componentCharIndex] = currentChar;
+    }
+    //kontynuacja dnagego słowa
+    else if(isCharValid(prevChar) && isCharValid(currentChar))
+    {
+        *componentCharIndex += 1;
+
+        fprintf(stderr, "char = %c\n", currentChar);
+        fprintf(stderr, "componentIndex = %d\n", *componentIndex);
+        fprintf(stderr, "componentCharIndex = %d\n\n", *componentCharIndex);
+        componentsArray[*componentIndex][*componentCharIndex] = currentChar;
+    }
+
+    return COMMANDHANDLER_ERR_SUCCESS;
+}
+
+
 CommandHandlerError interpretCommand(char *commandText, Command *result)
 {
     size_t commandTextLength = strlen(commandText);
 
+    //tablica składowych stringów komendy
     char **cmdComponentsArray = NULL;
 
+    //tablica na odczytaną nazwę komendy i jej argumenty
     mallocStringArray(&cmdComponentsArray,
             COMMAND_ARGS_COUNT_MAX + 1,
             commandTextLength);
@@ -69,25 +137,30 @@ CommandHandlerError interpretCommand(char *commandText, Command *result)
     //niż ten oznaczający ignorowanie linii
     int validCharEncountered = 0;
 
+    //index aktualnie odczytywanej składowej komendy
+    int cmdComponentIndex = -1;
+
+    //index aktualnego znaku w aktualnie odczytywanej składowej komendy
+    int cmdComponentCharIndex = 0;
+
     for(int i = 0; i < commandTextLength; i++)
     {
-        validCharEncountered =  validCharEncountered ||
-                (commandText[i] != COMMAND_LINE_IGNORE_CHARACTER &&
-                 commandText[i] >= 33);
+        CommandHandlerError err = readNextCharOfCommand(commandText[i],
+                (i > 0 ? commandText[i - 1] : commandSeparators[0]),
+                &validCharEncountered, cmdComponentsArray,
+                &cmdComponentIndex, &cmdComponentCharIndex);
 
-        //Sprawdzanie, czy wystąpił znak sygnalizujący ignorowanie linii
-        if(!validCharEncountered)
+        if(err != COMMANDHANDLER_ERR_SUCCESS)
         {
-            if(commandText[i] == COMMAND_LINE_IGNORE_CHARACTER)
-            {
-                freeStringArray(cmdComponentsArray,
-                        COMMAND_ARGS_COUNT_MAX + 1);
+            freeStringArray(cmdComponentsArray,
+                    COMMAND_ARGS_COUNT_MAX + 1);
 
-                return COMMANDHANDLER_ERR_IGNORE_LINE;
-            }
+            return err;
         }
-
     }
+
+    printf("CMD = [name: %s, args: %s, %s, %s]\n", cmdComponentsArray[0],
+    cmdComponentsArray[1], cmdComponentsArray[2], cmdComponentsArray[3]);
 
     freeStringArray(cmdComponentsArray,COMMAND_ARGS_COUNT_MAX + 1);
 
