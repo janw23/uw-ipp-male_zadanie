@@ -42,9 +42,12 @@ int isCharSeparator(char ch)
     return 0;
 }
 
-int isCharValid(char ch)
+//dzięki [validCharEncountered] znak oznaczający ignorowanie linii jest
+//uznawany za poprawny znak jeśli wcześniej wystąpiły inne poprawne znaki
+        int isCharValid(char ch, int *validCharEncountered)
 {
-    return ch >= 33 && ch != COMMAND_IGNORE_LINE_CHARACTER;
+    return ch >= 33 &&
+        (*validCharEncountered || ch != COMMAND_IGNORE_LINE_CHARACTER);
 }
 
 CommandHandlerError printInCaseOfError(CommandHandlerError err)
@@ -76,7 +79,7 @@ void freeStringArray(char **array, int elemMaxCount)
 // żaden inny niebiały znak
 int checkForIgnoreLineCharacter(char ch, int *validCharEncountered)
 {
-    if(isCharValid(ch))
+    if(isCharValid(ch, validCharEncountered))
         *validCharEncountered = 1;
 
     return *validCharEncountered == 0 && ch == COMMAND_IGNORE_LINE_CHARACTER;
@@ -92,7 +95,8 @@ CommandHandlerError readNextCharOfCommand(char currentChar, char prevChar,
         return COMMANDHANDLER_ERR_IGNORE_LINE;
 
     //rozpoczęcie kolejnego słowa
-    if(isCharSeparator(prevChar) && isCharValid(currentChar))
+    if(isCharSeparator(prevChar) &&
+        isCharValid(currentChar, validCharEncountered))
     {
         *componentIndex += 1;
         *componentCharIndex = 0;
@@ -107,7 +111,8 @@ CommandHandlerError readNextCharOfCommand(char currentChar, char prevChar,
         componentsArray[*componentIndex][*componentCharIndex] = currentChar;
     }
     //kontynuacja dnagego słowa
-    else if(isCharValid(prevChar) && isCharValid(currentChar))
+    else if(isCharValid(prevChar, validCharEncountered) &&
+        isCharValid(currentChar, validCharEncountered))
     {
         *componentCharIndex += 1;
 
