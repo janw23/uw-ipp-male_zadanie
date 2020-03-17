@@ -1,11 +1,11 @@
 #include "dataholder.h"
 
-#define COMMANDHANDLER_ERR_SUCCESS 0
-#define COMMANDHANDLER_ERR_FAILURE 1
-#define COMMANDHANDLER_ERR_CMD_NAME_NOT_RECOGNIZED 2
-#define COMMANDHANDLER_ERR_IGNORE_LINE 3
-#define COMMANDHANDLER_ERR_CMD_TOO_MANY_ARGUMENTS 4
+#define COMMAND_ERR_SUCCESS 0
+#define COMMAND_ERR_FAILURE 1
+#define COMMAND_ERR_CMD_NAME_NOT_RECOGNIZED 2
+#define COMMAND_ERR_IGNORE_LINE 3
+#define COMMAND_ERR_CMD_TOO_MANY_ARGUMENTS 4
 
-typedef int CommandHandlerError;
+typedef int CommandError;
 
 char *handleCommand(char *commandText, DataHolder dataHolder);
