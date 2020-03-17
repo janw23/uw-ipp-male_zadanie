@@ -4,6 +4,11 @@
 #include <malloc.h>
 
 #define KNOWN_COMMANDS_COUNT 4
+#define KNOWN_COMMAND_SEPARATORS_COUNT 5
+
+#define COMMAND_ARGS_COUNT_MAX 3
+#define COMMAND_LINE_IGNORE_CHARACTER '#'
+#define COMMAND_LINE_END_CHARACTER '\n'
 
 #define COMMANDHANDLER_CMD_ADD 0
 #define COMMANDHANDLER_CMD_DEL 1
@@ -23,6 +28,9 @@ const Command knownCommands[KNOWN_COMMANDS_COUNT] =
          {"PRINT", COMMANDHANDLER_CMD_PRINT, NULL},
          {"CHECK", COMMANDHANDLER_CMD_CHECK, NULL}};
 
+const char commandSeparators[KNOWN_COMMAND_SEPARATORS_COUNT] =
+        {',', '\t', '\v', '\f', '\r'};
+
 CommandHandlerError printInCaseOfError(CommandHandlerError err)
 {
     if(err != COMMANDHANDLER_ERR_SUCCESS)
@@ -31,43 +39,61 @@ CommandHandlerError printInCaseOfError(CommandHandlerError err)
     return err;
 }
 
-CommandHandlerError getCommandCode(char **commandTextPtr, int *result)
+void mallocStringArray(char ***arrayPtr, int elemMaxCount, int elemMaxLenght)
 {
-    char *cmdName = strsep(commandTextPtr, " ");
+    *arrayPtr = malloc((elemMaxCount) * sizeof(char*));
 
-    fprintf(stderr, "Here\n");
+    for(int i = 0; i <= COMMAND_ARGS_COUNT_MAX; i++)
+        (*arrayPtr)[i] = malloc(elemMaxLenght * sizeof(char));
+}
 
-    //BŁĄÐ JEST TUTAJ!!!!
-    fprintf(stderr,"Detected name: <%s>\n", cmdName);
+void freeStringArray(char **array, int elemMaxCount)
+{
+    for(int i = 0; i < elemMaxCount; i++)
+        free(array[i]);
 
-
-
-    for(int i = 0; i < KNOWN_COMMANDS_COUNT; i++)
-    {
-
-        if(strcmp(cmdName, knownCommands[i].name) == 0)
-        {
-            *result = knownCommands[i].code;
-            return COMMANDHANDLER_ERR_SUCCESS;
-        }
-    }
-
-    return COMMANDHANDLER_ERR_CMD_NAME_NOT_RECOGNIZED;
+    free(array);
 }
 
 CommandHandlerError interpretCommand(char *commandText, Command *result)
 {
-    CommandHandlerError err;
+    size_t commandTextLength = strlen(commandText);
 
-    int cmdCode;
+    char **cmdComponentsArray = NULL;
 
-    err = getCommandCode(&commandText, &cmdCode);
-    if(err != COMMANDHANDLER_ERR_SUCCESS)
-        return err;
+    mallocStringArray(&cmdComponentsArray,
+            COMMAND_ARGS_COUNT_MAX + 1,
+            commandTextLength);
 
-    printf("Recognized command code: %d\n", cmdCode);
+    //pamiętanie, czy napotkany został znak inny
+    //niż ten oznaczający ignorowanie linii
+    int validCharEncountered = 0;
 
-    //Command *cmd = malloc(sizeof(Command));
+    for(int i = 0; i < commandTextLength; i++)
+    {
+        validCharEncountered =  validCharEncountered ||
+                (commandText[i] != COMMAND_LINE_IGNORE_CHARACTER &&
+                 commandText[i] >= 33);
+
+        //Sprawdzanie, czy wystąpił znak sygnalizujący ignorowanie linii
+        if(!validCharEncountered)
+        {
+            if(commandText[i] == COMMAND_LINE_IGNORE_CHARACTER)
+            {
+                freeStringArray(cmdComponentsArray,
+                        COMMAND_ARGS_COUNT_MAX + 1);
+
+                return COMMANDHANDLER_ERR_IGNORE_LINE;
+            }
+        }
+
+    }
+
+    freeStringArray(cmdComponentsArray,COMMAND_ARGS_COUNT_MAX + 1);
+
+    if(!validCharEncountered)
+        return COMMANDHANDLER_ERR_IGNORE_LINE;
+
     return COMMANDHANDLER_ERR_SUCCESS;
 }
 

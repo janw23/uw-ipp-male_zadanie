@@ -16,7 +16,11 @@ void handleInput(DataHolder dataHolder)
     //czyta kolejne linie dopóki nie wystąpi 'samotny' znak \n
     while(getline(&buffer, &bufsize, stdin) > 1)
     {
-        char *reply = handleCommand(buffer, dataHolder);
+        //kopiowanie bufora, ponieważ handleCommand
+        //może zmienić wskaźnik argumentu
+        char *cmd = buffer;
+
+        char *reply = handleCommand(cmd, dataHolder);
         printf("%s\n", reply);
     }
 
