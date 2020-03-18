@@ -6,6 +6,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <assert.h>
+#include <string.h>
 
 
 void handleInput(DataHolder dataHolder)
@@ -21,7 +22,9 @@ void handleInput(DataHolder dataHolder)
         char *cmd = buffer;
 
         char *reply = handleCommand(cmd, dataHolder);
-        printf("%s\n", reply);
+
+        if(strlen(reply) > 0)
+            printf("%s\n", reply);
     }
 
     free(buffer);

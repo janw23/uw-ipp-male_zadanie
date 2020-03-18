@@ -67,7 +67,7 @@ CommandError readNextCharOfCommand
         *componentCharIndex = 0;
 
         if(*componentIndex >= COMMAND_ARGS_COUNT_MAX + 1)
-            return COMMAND_ERR_CMD_TOO_MANY_ARGUMENTS;
+            return COMMAND_ERR_CMD_TOO_MANY_ARGS;
 
         componentsArray[*componentIndex][*componentCharIndex] = currentChar;
     }

@@ -1,5 +1,6 @@
 #include "dataholder.h"
 #include <stdlib.h>
+#include <stdio.h>
 #include <string.h>
 #include <assert.h>
 
@@ -18,7 +19,7 @@ struct DataEntry
 //wskazywanym przez podany pusty pointer
 void dataHolderCreate(DataHolder *dataHolderPtr)
 {
-    assert(*dataHolderPtr == NULL);
+    //assert(*dataHolderPtr == NULL);
 
     *dataHolderPtr = malloc(sizeof(struct DataEntry));
 
@@ -43,7 +44,7 @@ void dataHolderDestroy(DataHolder dataHolder)
     free(dataHolder);
 }
 
-void dataHolderAddEntry(DataHolder dataHolder, char *entryName)
+DataHolder dataHolderAddEntry(DataHolder dataHolder, char *entryName)
 {
     int subArrayLength = dataHolder->subHoldersArrayLength;
 
@@ -53,6 +54,8 @@ void dataHolderAddEntry(DataHolder dataHolder, char *entryName)
 
     dataHolder->subHoldersArray[subArrayLength]->name = entryName;
     dataHolder->subHoldersArrayLength++;
+
+    return dataHolder->subHoldersArray[subArrayLength];
 }
 
 void swapDataHolders(DataHolder *holderA, DataHolder *holderB)
@@ -84,6 +87,16 @@ void dataHolderRemoveEntry(DataHolder dataHolder, char *entryName)
     }
 }
 
+void dataHolderRemoveAllEntries(DataHolder dataHolder)
+{
+    assert(dataHolder != NULL);
+
+    for(int i = 0; i < dataHolder->subHoldersArrayLength; i++)
+        dataHolderDestroy(dataHolder->subHoldersArray[i]);
+
+    dataHolder->subHoldersArrayLength = 0;
+}
+
 DataHolder dataHolderFindEntry(DataHolder dataHolder, char *entryName)
 {
     assert(dataHolder != NULL);
@@ -97,6 +110,31 @@ DataHolder dataHolderFindEntry(DataHolder dataHolder, char *entryName)
     }
 
     return NULL;
+}
+
+DataHolder dataHolderFindOrAddEntry(DataHolder dataHolder, char *entryName)
+{
+    DataHolder result = dataHolderFindEntry(dataHolder, entryName);
+
+    if(result == NULL)
+        result = dataHolderAddEntry(dataHolder, entryName);
+
+    return result;
+}
+
+void dataHolderPrintEntryName(DataHolder dataHolder)
+{
+    printf("%s\n", dataHolder->name);
+}
+
+void dataHolderPrintAllEntries(DataHolder dataHolder)
+{
+    for(int i = 0; i < dataHolder->subHoldersArrayLength; i++)
+    {
+        fprintf(stderr, "Printing dataHolder: %s\n", dataHolder->subHoldersArray[i]->name);
+        dataHolderPrintEntryName(dataHolder->subHoldersArray[i]);
+        dataHolderPrintAllEntries(dataHolder->subHoldersArray[i]);
+    }
 }
 
 int getLength(DataHolder dataHolder)
