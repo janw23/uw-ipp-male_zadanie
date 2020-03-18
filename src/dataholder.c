@@ -6,143 +6,131 @@
 
 #define DATAHOLDER_INITIAL_LENGTH_MAX 100
 
-struct DataEntry
-{
+struct DataEntry {
     char *name;
 
-    DataHolder *subHoldersArray;
-    int subHoldersArrayLength;
-    int subHoldersArrayLengthMax;
+    DataHolder prev, subHolder, next;
 };
+
+int dataHolderStringCompare(char *a, char *b) {
+    if (a == NULL && b == NULL)
+        return 0;
+
+    if (a == NULL)
+        return -1;
+
+    if (b == NULL)
+        return 1;
+
+    return strcmp(a, b);
+}
 
 //Tworzy pointer na nowy DataHolder w miejscu
 //wskazywanym przez podany pusty pointer
-void dataHolderCreate(DataHolder *dataHolderPtr)
-{
+void dataHolderCreate(DataHolder *dataHolderPtr, char *name) {
     //assert(*dataHolderPtr == NULL);
 
     *dataHolderPtr = malloc(sizeof(struct DataEntry));
 
-    (*dataHolderPtr)->subHoldersArray =
-            malloc(DATAHOLDER_INITIAL_LENGTH_MAX * sizeof(struct DataEntry));
+    (*dataHolderPtr)->name = malloc(strlen(name) + 1);
+    memcpy((*dataHolderPtr)->name, name, strlen(name) + 1);
 
-    (*dataHolderPtr)->subHoldersArrayLengthMax = DATAHOLDER_INITIAL_LENGTH_MAX;
-    (*dataHolderPtr)->subHoldersArrayLength = 0;
+    (*dataHolderPtr)->prev = NULL;
+    (*dataHolderPtr)->next = NULL;
+    (*dataHolderPtr)->subHolder = NULL;
 }
 
-void dataHolderDestroy(DataHolder dataHolder)
-{
-    //Nie trzeba nic robić jeśli obiekt już nie istnieje
-    if(dataHolder == NULL)
+void dataHolderDestroy(DataHolder dataHolder) {
+    if (dataHolder == NULL)
         return;
 
-    //Niszczenie podrzędnych DataHolderów
-    for(int i = 0; i < dataHolder->subHoldersArrayLength; i++)
-         dataHolderDestroy(dataHolder->subHoldersArray[i]);
+    free(dataHolder->name);
 
-    free(dataHolder->subHoldersArray);
+    dataHolderDestroy(dataHolder->prev);
+    dataHolderDestroy(dataHolder->next);
+    dataHolderDestroy(dataHolder->subHolder);
+
     free(dataHolder);
 }
 
-DataHolder dataHolderAddEntry(DataHolder dataHolder, char *entryName)
-{
-    int subArrayLength = dataHolder->subHoldersArrayLength;
+DataHolder dataHolderAddEntry(DataHolder dataHolder, char *entryName) {
+    if (dataHolder->subHolder == NULL) {
+        dataHolderCreate(&(dataHolder->subHolder), entryName);
+        return dataHolder->subHolder;
+    }
 
-    assert(subArrayLength < dataHolder->subHoldersArrayLengthMax);
+    DataHolder currentHolder = dataHolder->subHolder;
 
-    dataHolderCreate(&(dataHolder->subHoldersArray[subArrayLength]));
+    while (1) {
+        int compareNameResult =
+                dataHolderStringCompare(currentHolder->name, entryName);
 
-    dataHolder->subHoldersArray[subArrayLength]->name = entryName;
-    dataHolder->subHoldersArrayLength++;
+        if (compareNameResult == 0)
+            return currentHolder;
 
-    return dataHolder->subHoldersArray[subArrayLength];
-}
+        if (compareNameResult == 1) {
+            if (currentHolder->next == NULL) {
+                dataHolderCreate(&(currentHolder->next), entryName);
+                return dataHolder->next;
+            }
 
-void swapDataHolders(DataHolder *holderA, DataHolder *holderB)
-{
-    DataHolder helpHolder = *holderA;
+            currentHolder = currentHolder->next;
+        } else if (compareNameResult == -1) {
+            if (currentHolder->prev == NULL) {
+                dataHolderCreate(&(currentHolder->prev), entryName);
+                return dataHolder->prev;
+            }
 
-    *holderA = *holderB;
-    *holderB = helpHolder;
-}
-
-void dataHolderRemoveEntry(DataHolder dataHolder, char *entryName)
-{
-    assert(dataHolder != NULL);
-
-    int subArrayLength = dataHolder->subHoldersArrayLength;
-
-    for(int i = 0; i < subArrayLength; i++)
-    {
-        if(strcmp(dataHolder->subHoldersArray[i]->name, entryName) == 0)
-        {
-            swapDataHolders(&(dataHolder->subHoldersArray[i]),
-                    &(dataHolder->subHoldersArray[subArrayLength - 1]));
-
-            dataHolderDestroy(dataHolder->subHoldersArray[subArrayLength - 1]);
-            dataHolder->subHoldersArrayLength--;
-
-            return;
+            currentHolder = currentHolder->prev;
         }
     }
 }
 
-void dataHolderRemoveAllEntries(DataHolder dataHolder)
-{
+void dataHolderRemoveEntry(DataHolder dataHolder, char *entryName) {
     assert(dataHolder != NULL);
 
-    for(int i = 0; i < dataHolder->subHoldersArrayLength; i++)
-        dataHolderDestroy(dataHolder->subHoldersArray[i]);
-
-    dataHolder->subHoldersArrayLength = 0;
 }
 
-DataHolder dataHolderFindEntry(DataHolder dataHolder, char *entryName)
-{
+void dataHolderRemoveAllEntries(DataHolder dataHolder) {
     assert(dataHolder != NULL);
 
-    int subArrayLength = dataHolder->subHoldersArrayLength;
+    dataHolderDestroy(dataHolder->subHolder);
+    dataHolder->subHolder = NULL;
+}
 
-    for(int i = 0; i < subArrayLength; i++)
-    {
-        if(strcmp(dataHolder->subHoldersArray[i]->name, entryName) == 0)
-            return dataHolder->subHoldersArray[i];
+DataHolder dataHolderFindEntry(DataHolder dataHolder, char *entryName) {
+    assert(dataHolder != NULL);
+
+    if (dataHolder->subHolder == NULL)
+        return NULL;
+
+    DataHolder currentHolder = dataHolder->subHolder;
+
+    while (1) {
+        int compareNameResult =
+                dataHolderStringCompare(currentHolder->name, entryName);
+
+        if (compareNameResult == 0)
+            return currentHolder;
+
+        if (compareNameResult == 1) {
+            if (currentHolder->next == NULL)
+                return NULL;
+
+            currentHolder = currentHolder->next;
+        } else if (compareNameResult == -1) {
+            if (currentHolder->prev == NULL)
+                return NULL;
+
+            currentHolder = currentHolder->prev;
+        }
     }
-
-    return NULL;
 }
 
-DataHolder dataHolderFindOrAddEntry(DataHolder dataHolder, char *entryName)
-{
-    DataHolder result = dataHolderFindEntry(dataHolder, entryName);
-
-    if(result == NULL)
-        result = dataHolderAddEntry(dataHolder, entryName);
-
-    return result;
-}
-
-void dataHolderPrintEntryName(DataHolder dataHolder)
-{
+void dataHolderPrintEntryName(DataHolder dataHolder) {
     printf("%s\n", dataHolder->name);
 }
 
-void dataHolderPrintAllEntries(DataHolder dataHolder)
-{
-    for(int i = 0; i < dataHolder->subHoldersArrayLength; i++)
-    {
-        fprintf(stderr, "Printing dataHolder: %s\n", dataHolder->subHoldersArray[i]->name);
-        dataHolderPrintEntryName(dataHolder->subHoldersArray[i]);
-        dataHolderPrintAllEntries(dataHolder->subHoldersArray[i]);
-    }
-}
+void dataHolderPrintAllEntries(DataHolder dataHolder) {
 
-int getLength(DataHolder dataHolder)
-{
-    return dataHolder->subHoldersArrayLength;
-}
-
-char *getName(DataHolder dataHolder)
-{
-    return dataHolder->name;
 }

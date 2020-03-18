@@ -17,8 +17,7 @@
 
 typedef int CommandError;
 
-typedef struct
-{
+typedef struct {
     char *name;
     int code;
     char **args;

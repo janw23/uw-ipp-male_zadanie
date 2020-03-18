@@ -9,31 +9,28 @@
 #include <string.h>
 
 
-void handleInput(DataHolder dataHolder)
-{
+void handleInput(DataHolder dataHolder) {
     size_t bufsize = 64;
     char *buffer = malloc(bufsize * sizeof(char));
 
     //czyta kolejne linie dopóki nie wystąpi 'samotny' znak \n
-    while(getline(&buffer, &bufsize, stdin) > 1)
-    {
+    while (getline(&buffer, &bufsize, stdin) > 1) {
         //kopiowanie bufora, ponieważ handleCommand
         //może zmienić wskaźnik argumentu
         char *cmd = buffer;
 
         char *reply = handleCommand(cmd, dataHolder);
 
-        if(strlen(reply) > 0)
+        if (strlen(reply) > 0)
             printf("%s\n", reply);
     }
 
     free(buffer);
 }
 
-int main()
-{
+int main() {
     DataHolder dataHolder = NULL;
-    dataHolderCreate(&dataHolder);
+    dataHolderCreate(&dataHolder, "MAIN HOLDER");
 
     handleInput(dataHolder);
 

@@ -3,13 +3,14 @@
 
 struct DataEntry;
 
-typedef struct DataEntry* DataHolder;
+typedef struct DataEntry *DataHolder;
 
-void dataHolderCreate(DataHolder *dataHolderPtr);
+void dataHolderCreate(DataHolder *dataHolderPtr, char *name);
 
 void dataHolderDestroy(DataHolder dataHolder);
 
-//Zwraca nowy dodany DataHolder
+//Jeśli istnieje już dataHolder o nazwie [entryName]
+//to go zwraca, a jeśli nie to tworzy nowy i go zwraca
 DataHolder dataHolderAddEntry(DataHolder dataHolder, char *entryName);
 
 void dataHolderRemoveEntry(DataHolder dataHolder, char *entryName);
@@ -17,9 +18,7 @@ void dataHolderRemoveEntry(DataHolder dataHolder, char *entryName);
 void dataHolderRemoveAllEntries(DataHolder dataHolder);
 
 //Zwraca DataHolder o nazwie [entryName] albo NULL jeśli takiego nie ma
-DataHolder dataHolderFindEntry(DataHolder dataHolder, char* entryName);
-
-DataHolder dataHolderFindOrAddEntry(DataHolder dataHolder, char *entryName);
+DataHolder dataHolderFindEntry(DataHolder dataHolder, char *entryName);
 
 void dataHolderPrintEntryName(DataHolder dataHolder);
 
