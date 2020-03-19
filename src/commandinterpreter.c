@@ -89,16 +89,18 @@ CommandError getCommandCode(char *cmdName, int *result) {
 CommandError commandFromStringArray(char **componentsArray, Command *cmdOut) {
     CommandError err;
 
-    cmdOut->name = malloc(strlen(componentsArray[0]) + 1);
-    memcpy(cmdOut->name, componentsArray[0], strlen(componentsArray[0]) + 1);
+    unsigned long nameLength = strlen(componentsArray[0]) + 1;
+
+    cmdOut->name = malloc(nameLength);
+    memcpy(cmdOut->name, componentsArray[0], nameLength);
 
     cmdOut->args = malloc(COMMAND_ARGS_COUNT_MAX * sizeof(char *));
 
     for (int i = 0; i < COMMAND_ARGS_COUNT_MAX; i++) {
-        cmdOut->args[i] = malloc(strlen(componentsArray[i + 1]) + 1);
+        nameLength = strlen(componentsArray[i + 1]) + 1;
 
-        memcpy(cmdOut->args[i], componentsArray[i + 1],
-               strlen(componentsArray[i + 1]) + 1);
+        cmdOut->args[i] = malloc(nameLength);
+        memcpy(cmdOut->args[i], componentsArray[i + 1], nameLength);
     }
 
     int cmdCode;
