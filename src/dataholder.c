@@ -15,43 +15,10 @@ struct DataEntry {
 
     //odnosi się do niższego 'poziomu' danych
     DataHolder subHolder;
+
+    //odnosi się do wyższego 'poziomu' danych
+    DataHolder overHolder;
 };
-
-int compareStrings(char *a, char *b) {
-    if (a == NULL && b == NULL)
-        return 0;
-
-    if (a == NULL)
-        return -1;
-
-    if (b == NULL)
-        return 1;
-
-    return strcmp(a, b);
-}
-
-void swapDataHolders(DataHolder *aPtr, DataHolder *bPtr) {
-    DataHolder helpHolder = *aPtr;
-
-    if ((*bPtr)->parent != NULL) {
-        if ((*bPtr)->isRightChild) {
-            (*bPtr)->parent->right = (*aPtr);
-        } else {
-            (*bPtr)->parent->left = (*aPtr);
-        }
-    }
-
-    if ((*aPtr)->parent != NULL) {
-        if ((*aPtr)->isRightChild) {
-            (*aPtr)->parent->right = (*bPtr);
-        } else {
-            (*aPtr)->parent->left = (*bPtr);
-        }
-    }
-
-    *aPtr = *bPtr; //SPRAWDZIĆ PODWÓJNĄ DEREFERENCJĘ
-    *bPtr = helpHolder;
-}
 
 //Tworzy pointer na nowy DataHolder w miejscu
 //wskazywanym przez podany pusty pointer
@@ -66,20 +33,10 @@ void dataHolderCreate(DataHolder *dataHolderPtr, char *name) {
     (*dataHolderPtr)->left = NULL;
     (*dataHolderPtr)->right = NULL;
     (*dataHolderPtr)->parent = NULL;
+    (*dataHolderPtr)->isRightChild = 0;
     (*dataHolderPtr)->subHolder = NULL;
-}
+    (*dataHolderPtr)->overHolder = NULL;
 
-void dataHolderDestroy(DataHolder dataHolder) {
-    if (dataHolder == NULL)
-        return;
-
-    free(dataHolder->name);
-
-    dataHolderDestroy(dataHolder->left);
-    dataHolderDestroy(dataHolder->right);
-    dataHolderDestroy(dataHolder->subHolder);
-
-    free(dataHolder);
 }
 
 //usuwa [dataHolder] z pominięciem [dataHolder->left] i [dataHolder->right]
@@ -87,6 +44,17 @@ void dataHolderDestroyKeepChildren(DataHolder dataHolder) {
     if (dataHolder == NULL)
         return;
 
+    if(dataHolder->parent != NULL) {
+        if(dataHolder->isRightChild) {
+            dataHolder->parent->right = NULL;
+        } else {
+            dataHolder->left = NULL;
+        }
+    }
+
+    if(dataHolder->overHolder != NULL)
+        dataHolder->overHolder->subHolder = NULL;
+
     free(dataHolder->name);
 
     dataHolderDestroy(dataHolder->subHolder);
@@ -94,9 +62,58 @@ void dataHolderDestroyKeepChildren(DataHolder dataHolder) {
     free(dataHolder);
 }
 
+void dataHolderDestroy(DataHolder dataHolder) {
+    if (dataHolder == NULL)
+        return;
+
+    dataHolderDestroy(dataHolder->left);
+    dataHolderDestroy(dataHolder->right);
+
+    dataHolderDestroyKeepChildren(dataHolder);
+}
+
+int compareStrings(char *a, char *b) {
+    if (a == NULL && b == NULL)
+        return 0;
+
+    if (a == NULL)
+        return -1;
+
+    if (b == NULL)
+        return 1;
+
+    return strcmp(a, b);
+}
+
+void swapDataHolders(DataHolder a, DataHolder b) {
+    if (b->parent != NULL) {
+        if (b->isRightChild) {
+            b->parent->right = a;
+        } else {
+            b->parent->left = a;
+        }
+    }
+
+    if (a->parent != NULL) {
+        if (a->isRightChild) {
+            a->parent->right = b;
+        } else {
+            a->parent->left = b;
+        }
+    }
+
+    struct DataEntry help = *a;
+    free(a);
+
+    *a = *b;
+    memcpy(b, &help, sizeof(help));
+}
+
 DataHolder dataHolderAddEntry(DataHolder dataHolder, char *entryName) {
     if (dataHolder->subHolder == NULL) {
         dataHolderCreate(&(dataHolder->subHolder), entryName);
+        dataHolder->subHolder->overHolder = dataHolder;
+
         return dataHolder->subHolder;
     }
 
@@ -184,6 +201,8 @@ DataHolder dataHolderGetLeftmostChild(DataHolder dataHolder) {
 void dataHolderRemoveEntry(DataHolder dataHolder, char *entryName) {
     assert(dataHolder != NULL);
 
+    fprintf(stderr, "Removing entry: %s\n", entryName);
+
     DataHolder target = dataHolderFindEntry(dataHolder, entryName);
 
     if (target == NULL)
@@ -197,21 +216,23 @@ void dataHolderRemoveEntry(DataHolder dataHolder, char *entryName) {
 
     //kopia potrzebna, bo poniższe wywołania swapDataHolders
     //powodują utratę tego, na co wskazuje target albo leftMost
-    DataHolder holderCopy = target;
+    DataHolder holderCopy;
 
     //jeśli nie ma lewego syna, to prawy syn przenoszony jest
     //na miejsce ojca, a ojciec jest usuwany
     if (target->left == NULL) {
-        swapDataHolders(&target, &(target->right));
+        holderCopy = target->right;
+        swapDataHolders(target, target->right);
 
         //ojciec, który teraz jest prawym synem, wciąż wskazuje
         //na swoje poprzednie dzieci, których błędem byłoby usunięcie
         dataHolderDestroyKeepChildren(holderCopy);
 
     } else if (target->right == NULL) {
-        swapDataHolders(&target, &(target->left));
+        holderCopy = target->left;
+        swapDataHolders(target, target->left);
 
-        dataHolderDestroyKeepChildren(holderCopy);    //tak jak wyżej
+        dataHolderDestroyKeepChildren(holderCopy);   //tak jak wyżej
 
     } else {
         //jeśli obaj synowie istnieją to podmienia ojca
@@ -219,17 +240,19 @@ void dataHolderRemoveEntry(DataHolder dataHolder, char *entryName) {
         //wskaźniki na dzieci tego dziecka i usuwa oryginalnego ojca
 
         DataHolder leftMost = dataHolderGetLeftmostChild(target->right);
-        holderCopy = leftMost;
 
-        swapDataHolders(&leftMost, &(leftMost->right));
+        leftMost->right->parent = leftMost->parent;
 
-        if (holderCopy->isRightChild) {
-            holderCopy->parent->right = holderCopy->right;
+        if (leftMost->isRightChild) {
+            leftMost->parent->right = leftMost->right;
         } else {
-            holderCopy->parent->left = holderCopy->right;
+            leftMost->parent->left = leftMost->right;
         }
 
+        swapDataHolders(target, leftMost);
 
+        //target to leftMost po zamianie
+        dataHolderDestroyKeepChildren(leftMost);
     }
 }
 
