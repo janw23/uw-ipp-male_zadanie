@@ -99,11 +99,11 @@ CommandError handleCmdPrint
     DataHolder currentDepthHolder = dataHolder;
 
     for (int i = 0; i < COMMAND_ARGS_COUNT_MAX; i++) {
-        if (i == COMMAND_ARGS_COUNT_MAX - 1)
-            return COMMAND_ERR_CMD_TOO_MANY_ARGS;
-
         if (strcmp(args[i], "") == 0)
             break;
+
+        if (i == COMMAND_ARGS_COUNT_MAX - 1)
+            return COMMAND_ERR_CMD_TOO_MANY_ARGS;
 
         currentDepthHolder = dataHolderFindEntry(currentDepthHolder, args[i]);
 

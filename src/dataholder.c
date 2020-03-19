@@ -66,10 +66,24 @@ void dataHolderDestroy(DataHolder dataHolder) {
     if (dataHolder == NULL)
         return;
 
+    if(dataHolder->parent != NULL) {
+        if(dataHolder->isRightChild) {
+            dataHolder->parent->right = NULL;
+        } else {
+            dataHolder->left = NULL;
+        }
+    }
+
+    if(dataHolder->overHolder != NULL)
+        dataHolder->overHolder->subHolder = NULL;
+
+    free(dataHolder->name);
+
     dataHolderDestroy(dataHolder->left);
     dataHolderDestroy(dataHolder->right);
+    dataHolderDestroy(dataHolder->subHolder);
 
-    dataHolderDestroyKeepChildren(dataHolder);
+    free(dataHolder);
 }
 
 int compareStrings(char *a, char *b) {
@@ -82,31 +96,23 @@ int compareStrings(char *a, char *b) {
     if (b == NULL)
         return 1;
 
-    return strcmp(a, b);
+    return strcmp(b, a);
 }
 
 void swapDataHolders(DataHolder a, DataHolder b) {
-    if (b->parent != NULL) {
-        if (b->isRightChild) {
-            b->parent->right = a;
-        } else {
-            b->parent->left = a;
-        }
-    }
+    struct DataEntry aCopy = *a;
 
-    if (a->parent != NULL) {
-        if (a->isRightChild) {
-            a->parent->right = b;
-        } else {
-            a->parent->left = b;
-        }
-    }
+    a->parent = b->parent;
+    b->parent = aCopy.parent;
 
-    struct DataEntry help = *a;
-    free(a);
+    a->isRightChild = b->isRightChild;
+    b->isRightChild = aCopy.isRightChild;
+
+    a->overHolder = b->overHolder;
+    b->overHolder = aCopy.overHolder;
 
     *a = *b;
-    memcpy(b, &help, sizeof(help));
+    memcpy(b, &aCopy, sizeof(aCopy));
 }
 
 DataHolder dataHolderAddEntry(DataHolder dataHolder, char *entryName) {
@@ -131,7 +137,7 @@ DataHolder dataHolderAddEntry(DataHolder dataHolder, char *entryName) {
                 dataHolderCreate(&(currentHolder->right), entryName);
 
                 currentHolder->right->parent = currentHolder;
-                currentHolder->isRightChild = 1;
+                currentHolder->right->isRightChild = 1;
 
                 return dataHolder->right;
             }
@@ -143,7 +149,7 @@ DataHolder dataHolderAddEntry(DataHolder dataHolder, char *entryName) {
                 dataHolderCreate(&(currentHolder->left), entryName);
 
                 currentHolder->left->parent = currentHolder;
-                currentHolder->isRightChild = 0;
+                currentHolder->left->isRightChild = 0;
 
                 return dataHolder->left;
             }
@@ -267,6 +273,15 @@ void dataHolderPrintEntryName(DataHolder dataHolder) {
     printf("%s\n", dataHolder->name);
 }
 
-void dataHolderPrintAllEntries(DataHolder dataHolder) {
+void printAll(DataHolder dataHolder) {
+    if(dataHolder == NULL)
+        return;
 
+    printAll(dataHolder->left);
+    dataHolderPrintEntryName(dataHolder);
+    printAll(dataHolder->right);
+}
+
+void dataHolderPrintAllEntries(DataHolder dataHolder) {
+    printAll(dataHolder->subHolder);
 }
