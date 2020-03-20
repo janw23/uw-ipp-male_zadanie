@@ -70,19 +70,18 @@ void dataHolderDestroy(DataHolder dataHolder) {
         if (dataHolder->isRightChild) {
             dataHolder->parent->right = NULL;
         } else {
-            dataHolder->left = NULL;
+            dataHolder->parent->left = NULL;
         }
     }
 
     if (dataHolder->overHolder != NULL)
         dataHolder->overHolder->subHolder = NULL;
 
-    free(dataHolder->name);
-
     dataHolderDestroy(dataHolder->left);
     dataHolderDestroy(dataHolder->right);
     dataHolderDestroy(dataHolder->subHolder);
 
+    free(dataHolder->name);
     free(dataHolder);
 }
 

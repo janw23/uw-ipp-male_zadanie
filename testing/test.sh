@@ -21,10 +21,15 @@ for filename in "${dir}"/*.in; do
 
   targetOut="${filename%in}out"
   realOut="${filename%in}pout"
-
-  ./"$prog" <"$filename" >"$realOut"
-
   testName=$(basename "${targetOut%.out}")
+
+  echo ""
+  echo "Running test: $testName"
+  echo ""
+
+  valgrind --error-exitcode=15 --leak-check=full \
+    --show-leak-kinds=all --errors-for-leak-kinds=all -s \
+    ./"$prog" <"$filename" >"$realOut"
 
   if [ "$(diff "$targetOut" "$realOut")" == "" ]; then
     testsPassed+=("$testName")

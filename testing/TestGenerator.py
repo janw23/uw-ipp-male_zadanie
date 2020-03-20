@@ -34,7 +34,8 @@ def string_gen(size=2, chars=string.ascii_lowercase + string.ascii_uppercase + s
 
 
 def printDebug(msg):
-    print(msg)
+    #print(msg)
+    pass
 
 
 def addWhitespacesToCommand(cmd):
@@ -176,7 +177,7 @@ def genNextTest():
 
 printDebug("Generating test package number #" + str(testID))
 
-generateTestsCount = randint(1, 2000)#2 ** 10)
+generateTestsCount = randint(1, 20000)#2 ** 10)
 
 for testNumber in range(generateTestsCount):
     genNextTest()
