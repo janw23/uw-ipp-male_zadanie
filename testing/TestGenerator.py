@@ -176,10 +176,13 @@ def genNextTest():
 
 printDebug("Generating test package number #" + str(testID))
 
-generateTestsCount = randint(0, 2 ** 10)
+generateTestsCount = randint(1, 2000)#2 ** 10)
 
 for testNumber in range(generateTestsCount):
     genNextTest()
+
+#ostatnie znak nowej linii powinien zakończyć program
+generatedInputTargetFile.write("\n")
 
 generatedInputTargetFile.close()
 generatedOutputTargetFile.close()

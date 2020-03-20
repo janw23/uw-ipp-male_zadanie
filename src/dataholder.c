@@ -96,7 +96,15 @@ int compareStrings(char *a, char *b) {
     if (b == NULL)
         return 1;
 
-    return strcmp(b, a);
+    int compareResult = strcmp(b, a);
+
+    if (compareResult > 0)
+        return 1;
+
+    if(compareResult < 0)
+        return -1;
+
+    return 0;
 }
 
 void swapDataHolders(DataHolder a, DataHolder b) {
