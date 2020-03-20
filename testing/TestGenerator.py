@@ -27,6 +27,12 @@ dataHolder = {}
 # znane znaki białe
 whitespaces = " "  # " \t\v\f\r"
 
+#nieprawdiłowe znaki (które nie powinny być przyjmowane przez program)
+wrongCharacters = ""
+#for ch in range(30, 33):
+#    if ch != 10:    #pomijanie \n
+#        wrongCharacters += chr(ch)
+
 
 # źródło https://stackoverflow.com/questions/2257441/random-string-generation-with-upper-case-letters-and-digits
 def string_gen(size=2, chars=string.ascii_lowercase + string.ascii_uppercase + string.digits + "#"):
@@ -34,8 +40,8 @@ def string_gen(size=2, chars=string.ascii_lowercase + string.ascii_uppercase + s
 
 
 def printDebug(msg):
-    #print(msg)
-    pass
+    print(msg)
+    #pass
 
 
 def addWhitespacesToCommand(cmd):
@@ -56,6 +62,14 @@ def writeCommandToInput(cmd):
 def writeResultToOutput(result):
     generatedOutputTargetFile.write(result)
 
+def genCommandArgs(cmd, argsCount):
+    for i in range(argsCount):
+        cmd.append(string_gen())
+
+def genWrongCommandArgs(cmd, argsCount):
+    for i in range(argsCount):
+        cmd.append(string_gen(
+            chars=string.ascii_lowercase + string.ascii_uppercase + string.digits + "#" + wrongCharacters))
 
 def genTestCmdAddCorrect():
     printDebug("Generating CORRECT ADD command test")
@@ -63,9 +77,7 @@ def genTestCmdAddCorrect():
     cmd = ["ADD"]
 
     argsCount = randint(1, 3)
-    for i in range(argsCount):
-        arg = string_gen()
-        cmd.append(arg)
+    genCommandArgs(cmd, argsCount)
 
     currentHolder = dataHolder
 
@@ -85,7 +97,7 @@ def genTestCmdAddCorrect():
 def genTestCmdAddWrong():
     printDebug("Generating WRONG ADD command test")
 
-    cmd = [string_gen(chars=whitespaces) + "ADD "]
+    cmd = ["ADD"]
 
     # losowanie, czy błąd ma polegać na zbyt małej,
     # czy zbyt dużej liczbie argumentów
@@ -93,20 +105,51 @@ def genTestCmdAddWrong():
     if randint(0, 1) == 1:
         argsCount = randint(4, 100)
 
-    for i in range(argsCount):
-        arg = string_gen(chars=whitespaces) + string_gen() + string_gen(chars=whitespaces)
-        cmd.append(arg)
+    genWrongCommandArgs(cmd, argsCount)
 
     writeCommandToInput(cmd)
     writeResultToOutput("ERROR\n")
 
 
 def genTestCmdDelCorrect():
-    pass
+    printDebug("Generating CORRECT DEL command test")
+
+    global dataHolder
+
+    cmd = ["DEL"]
+
+    argsCount = randint(0, 3)
+    genCommandArgs(cmd, argsCount)
+
+    currentHolder = dataHolder
+
+    if argsCount == 0:
+        currentHolder.clear()
+    else:
+        for name in cmd[1:-1]:
+            if name in currentHolder:
+                currentHolder = currentHolder[name]
+                if name == cmd[-1]:
+                    currentHolder.clear()
+            else:
+                break
+
+    writeCommandToInput(cmd)
+    writeResultToOutput("OK\n")
 
 
 def genTestCmdDelWrong():
-    pass
+    printDebug("Generating WRONG DEL command test")
+
+    global dataHolder
+
+    cmd = ["DEL"]
+
+    argsCount = randint(4, 100)
+    genWrongCommandArgs(cmd, argsCount)
+
+    writeCommandToInput(cmd)
+    writeResultToOutput("ERROR\n")
 
 
 def genTestCmdPrintCorrect():
@@ -118,7 +161,22 @@ def genTestCmdPrintWrong():
 
 
 def genTestCmdCheckCorrect():
-    pass
+    printDebug("Generating CORRECT CHECK command test")
+
+    cmd = ["CHECK"]
+
+    argsCount = randint(1, 3)
+    genCommandArgs(cmd, argsCount)
+
+    currentHolder = dataHolder
+
+    for name in cmd[1:-1]: #może powodować błað bo ostatni wpis może być taki, jak pierwszy; w DEL to samo
+        if name in currentHolder:
+            currentHolder = currentHolder[name]
+            if name
+
+    writeCommandToInput(cmd)
+    writeResultToOutput("OK\n")
 
 
 def genTestCmdCheckWrong():
@@ -138,7 +196,7 @@ def genTestWrongCmdName():
 
 
 def genNextTest():
-    genTestOption = randint(0, 0)  # test którego z dostępnych poleceń ma zostać wygenerowany
+    genTestOption = randint(0, 1)  # test którego z dostępnych poleceń ma zostać wygenerowany
     genTestCorrect = randint(0, 1)  # czy ma zostać wygenerowana poprawna, czy błędna wersja testu
 
     if genTestOption == 0:
@@ -174,15 +232,14 @@ def genNextTest():
     elif genTestOption == 6:
         genTestWrongCmdName()
 
-
 printDebug("Generating test package number #" + str(testID))
 
-generateTestsCount = randint(1, 20000)#2 ** 10)
+generateTestsCount = 2000#randint(1, 20000)  # 2 ** 10)
 
 for testNumber in range(generateTestsCount):
     genNextTest()
 
-#ostatnie znak nowej linii powinien zakończyć program
+# ostatnie znak nowej linii powinien zakończyć program
 generatedInputTargetFile.write("\n")
 
 generatedInputTargetFile.close()
