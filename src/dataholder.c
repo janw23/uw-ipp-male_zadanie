@@ -44,15 +44,15 @@ void dataHolderDestroyKeepChildren(DataHolder dataHolder) {
     if (dataHolder == NULL)
         return;
 
-    if(dataHolder->parent != NULL) {
-        if(dataHolder->isRightChild) {
+    if (dataHolder->parent != NULL) {
+        if (dataHolder->isRightChild) {
             dataHolder->parent->right = NULL;
         } else {
             dataHolder->left = NULL;
         }
     }
 
-    if(dataHolder->overHolder != NULL)
+    if (dataHolder->overHolder != NULL)
         dataHolder->overHolder->subHolder = NULL;
 
     free(dataHolder->name);
@@ -66,15 +66,15 @@ void dataHolderDestroy(DataHolder dataHolder) {
     if (dataHolder == NULL)
         return;
 
-    if(dataHolder->parent != NULL) {
-        if(dataHolder->isRightChild) {
+    if (dataHolder->parent != NULL) {
+        if (dataHolder->isRightChild) {
             dataHolder->parent->right = NULL;
         } else {
             dataHolder->left = NULL;
         }
     }
 
-    if(dataHolder->overHolder != NULL)
+    if (dataHolder->overHolder != NULL)
         dataHolder->overHolder->subHolder = NULL;
 
     free(dataHolder->name);
@@ -116,6 +116,8 @@ void swapDataHolders(DataHolder a, DataHolder b) {
 }
 
 DataHolder dataHolderAddEntry(DataHolder dataHolder, char *entryName) {
+    assert(dataHolder != NULL);
+
     if (dataHolder->subHolder == NULL) {
         dataHolderCreate(&(dataHolder->subHolder), entryName);
         dataHolder->subHolder->overHolder = dataHolder;
@@ -139,7 +141,7 @@ DataHolder dataHolderAddEntry(DataHolder dataHolder, char *entryName) {
                 currentHolder->right->parent = currentHolder;
                 currentHolder->right->isRightChild = 1;
 
-                return dataHolder->right;
+                return currentHolder->right;
             }
 
             currentHolder = currentHolder->right;
@@ -151,7 +153,7 @@ DataHolder dataHolderAddEntry(DataHolder dataHolder, char *entryName) {
                 currentHolder->left->parent = currentHolder;
                 currentHolder->left->isRightChild = 0;
 
-                return dataHolder->left;
+                return currentHolder->left;
             }
 
             currentHolder = currentHolder->left;
@@ -274,7 +276,7 @@ void dataHolderPrintEntryName(DataHolder dataHolder) {
 }
 
 void printAll(DataHolder dataHolder) {
-    if(dataHolder == NULL)
+    if (dataHolder == NULL)
         return;
 
     printAll(dataHolder->left);
