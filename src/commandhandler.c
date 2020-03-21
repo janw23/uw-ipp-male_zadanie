@@ -69,9 +69,12 @@ CommandError handleCmdDel
     int argsCount = 0;
 
     while (argsCount < COMMAND_ARGS_COUNT_MAX &&
-    strcmp(args[argsCount], "") != 0) {
-            argsCount++;
+           strcmp(args[argsCount], "") != 0) {
+        argsCount++;
     }
+
+    if (argsCount > COMMAND_ARGS_COUNT_MAX)
+        return COMMAND_ERR_CMD_TOO_MANY_ARGS;
 
     if (argsCount == 0) {
         dataHolderRemoveAllEntries(dataHolder);
@@ -96,47 +99,58 @@ CommandError handleCmdPrint
         (char **args, DataHolder dataHolder, char **resultMsg) {
     *resultMsg = "";
 
-    DataHolder currentDepthHolder = dataHolder;
+    int argsCount = 0;
 
-    for (int i = 0; i < COMMAND_ARGS_COUNT_MAX; i++) {
-        if (strcmp(args[i], "") == 0)
-            break;
+    while (argsCount < COMMAND_ARGS_COUNT_MAX &&
+           strcmp(args[argsCount], "") != 0) {
+        argsCount++;
+    }
 
-        if (i == COMMAND_ARGS_COUNT_MAX - 1)
-            return COMMAND_ERR_CMD_TOO_MANY_ARGS;
+    if (argsCount >= COMMAND_ARGS_COUNT_MAX)
+        return COMMAND_ERR_CMD_TOO_MANY_ARGS;
 
-        currentDepthHolder = dataHolderFindEntry(currentDepthHolder, args[i]);
+    DataHolder currentHolder = dataHolder;
 
-        if (currentDepthHolder == NULL)
+    for (int i = 0; i < argsCount; i++) {
+        currentHolder = dataHolderFindEntry(currentHolder, args[i]);
+
+        if (currentHolder == NULL)
             return COMMAND_ERR_SUCCESS;
     }
 
-    dataHolderPrintAllEntries(currentDepthHolder);
+    dataHolderPrintAllEntriesOrdered(currentHolder);
 
     return COMMAND_ERR_SUCCESS;
 }
 
 CommandError handleCmdCheck
         (char **args, DataHolder dataHolder, char **resultMsg) {
-    if (strcmp(args[0], "") == 0)
+
+    int argsCount = 0;
+
+    while (argsCount < COMMAND_ARGS_COUNT_MAX &&
+           strcmp(args[argsCount], "") != 0) {
+        argsCount++;
+    }
+
+    if (argsCount == 0)
         return COMMAND_ERR_CMD_TOO_FEW_ARGS;
 
-    DataHolder currentDepthHolder = dataHolder;
+    if (argsCount > COMMAND_ARGS_COUNT_MAX)
+        return COMMAND_ERR_CMD_TOO_MANY_ARGS;
 
-    for (int i = 0; i < COMMAND_ARGS_COUNT_MAX; i++) {
-        if (strcmp(args[i], "") == 0)
-            break;
+    DataHolder currentHolder = dataHolder;
 
-        currentDepthHolder = dataHolderFindEntry(currentDepthHolder, args[i]);
+    for (int i = 0; i < argsCount; i++) {
+        currentHolder = dataHolderFindEntry(currentHolder, args[i]);
 
-        if (currentDepthHolder == NULL) {
+        if (currentHolder == NULL) {
             *resultMsg = "NO";
             return COMMAND_ERR_SUCCESS;
         }
     }
 
     *resultMsg = "YES";
-
     return COMMAND_ERR_SUCCESS;
 }
 

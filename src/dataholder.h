@@ -20,6 +20,7 @@ void dataHolderRemoveAllEntries(DataHolder dataHolder);
 //Zwraca DataHolder o nazwie [entryName] albo NULL jeśli takiego nie ma
 DataHolder dataHolderFindEntry(DataHolder dataHolder, char *entryName);
 
-void dataHolderPrintEntryName(DataHolder dataHolder);
+//zwraca wszystkie nazwy wpisów w [dataHolder] w porządku rosnącym
+char *dataHolderGetAllEntryNamesOrdered(DataHolder dataHolder);
 
-void dataHolderPrintAllEntries(DataHolder dataHolder);
+void dataHolderPrintAllEntriesOrdered(DataHolder dataHolder);

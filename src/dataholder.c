@@ -230,10 +230,25 @@ DataHolder dataHolderFindEntry(DataHolder dataHolder, char *entryName) {
     return currentHolder;
 }
 
-void dataHolderPrintEntryName(DataHolder dataHolder) {
+//PO UŻYCIU TEJ FUNKCJI NALEŻY ZWOLNIĆ
+//PAMIĘĆ NA KTÓRĄ WSKAZUJE ZWRÓCONY WSKAŹNIK
+char *dataHolderGetAllEntryNamesOrdered(DataHolder dataHolder) {
     assert(0);
 }
 
-void dataHolderPrintAllEntries(DataHolder dataHolder) {
-    assert(0);
+void dataHolderPrintEntryAndChildren(DataHolder dataHolder) {
+    assert(dataHolder != NULL);
+
+    if (dataHolder->leftChild != NULL)
+        dataHolderPrintEntryAndChildren(dataHolder->leftChild);
+
+    printf("%s\n", dataHolder->name);
+
+    if (dataHolder->rightChild != NULL)
+        dataHolderPrintEntryAndChildren(dataHolder->rightChild);
+}
+
+void dataHolderPrintAllEntriesOrdered(DataHolder dataHolder) {
+    if (dataHolder->nextDepthChild != NULL)
+        dataHolderPrintEntryAndChildren(dataHolder->nextDepthChild);
 }
