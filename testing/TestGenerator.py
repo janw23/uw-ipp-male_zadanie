@@ -160,11 +160,43 @@ def genTestCmdDelWrong():
 
 
 def genTestCmdPrintCorrect():
-    pass
+    printDebug("Generating CORRECT PRINT command test")
 
+    cmd = ["PRINT"]
+
+    argsCount = randint(0, 2)
+    genCommandArgs(cmd, argsCount)
+
+    currentHolder = dataHolder
+
+    found = False if argsCount > 0 else True
+
+    for i in range(1, argsCount + 1):
+        if cmd[i] in currentHolder:
+            currentHolder = currentHolder[cmd[i]]
+            if i == argsCount:
+                found = True
+        else:
+            break
+
+    if found:
+        for name in sorted(currentHolder.keys()):
+            writeResultToOutput(name+"\n")
+
+    writeCommandToInput(cmd)
 
 def genTestCmdPrintWrong():
-    pass
+    printDebug("Generating WRONG PRINT command test")
+
+    global dataHolder
+
+    cmd = ["PRINT"]
+
+    argsCount = randint(3, 10)
+    genWrongCommandArgs(cmd, argsCount)
+
+    writeCommandToInput(cmd)
+    writeResultToOutput("ERROR\n")
 
 
 def genTestCmdCheckCorrect():
@@ -220,7 +252,7 @@ def genTestWrongCmdName():
 
 
 def genNextTest():
-    genTestOption = randint(0, 2)  # test którego z dostępnych poleceń ma zostać wygenerowany
+    genTestOption = randint(0, 3)  # test którego z dostępnych poleceń ma zostać wygenerowany
     genTestCorrect = randint(1, 1)  # czy ma zostać wygenerowana poprawna, czy błędna wersja testu
 
     if genTestOption == 0:
@@ -259,7 +291,7 @@ def genNextTest():
 
 printDebug("Generating test package number #" + str(testID))
 
-generateTestsCount = 100000  # randint(1, 20000)  # 2 ** 10)
+generateTestsCount = 1000  # randint(1, 20000)  # 2 ** 10)
 
 for testNumber in range(generateTestsCount):
     genNextTest()
