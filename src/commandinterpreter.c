@@ -117,7 +117,7 @@ CommandError commandFromStringArray(char **componentsArray, Command *cmdOut) {
 CommandError interpretCommand(const char *cmdText, Command *cmdOut) {
     CommandError err = COMMAND_ERR_SUCCESS;
 
-    size_t commandTextLength = strlen(cmdText);
+    int commandTextLength = (int) strlen(cmdText);
 
     //tablica na odczytaną nazwę komendy i jej argumenty
     char **cmdComponentsArray = NULL;
@@ -137,7 +137,7 @@ CommandError interpretCommand(const char *cmdText, Command *cmdOut) {
 
     for (int i = 0; i < commandTextLength; i++) {
         err = readNextCharOfCommand(cmdText[i],
-                (i > 0 ? cmdText[i - 1] : commandSeparators[0]),
+                (char) (i > 0 ? cmdText[i - 1] : commandSeparators[0]),
                 &validCharEncountered, cmdComponentsArray,
                 &cmdComponentIndex, &cmdComponentCharIndex);
 

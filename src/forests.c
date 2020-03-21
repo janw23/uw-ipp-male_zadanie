@@ -3,11 +3,15 @@
 
 #include "commandhandler.h"
 #include "dataholder.h"
+
+//usuwa warning "implicit declaration of getline()"
+//źródło: stackoverflow.com/questions/59014090/warning-implicit-declaration-of-function-getline
+#define _POSIX_C_SOURCE 200809L
 #include <stdio.h>
+
 #include <stdlib.h>
 #include <assert.h>
 #include <string.h>
-
 
 void handleInput(DataHolder dataHolder) {
     size_t bufsize = 64;
