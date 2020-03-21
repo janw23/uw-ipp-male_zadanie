@@ -10,6 +10,7 @@
 
 prog=$1
 dir=$2
+memcheck=$3 #jeśli wartośc to "memcheck", to uruchamia [prog] z valgrindem
 
 #tablice z nazwami plików, które zakończyły
 #się odpowiednio sukcesem albo porażką
@@ -27,9 +28,13 @@ for filename in "${dir}"/*.in; do
   echo "Running test: $testName"
   echo ""
 
-  valgrind --error-exitcode=15 --leak-check=full \
-    --show-leak-kinds=all --errors-for-leak-kinds=all -s \
+  if [ "$memcheck" == "memcheck" ]; then
+    valgrind --error-exitcode=15 --leak-check=full \
+      --show-leak-kinds=all --errors-for-leak-kinds=all -s \
+      ./"$prog" <"$filename" >"$realOut"
+  else
     ./"$prog" <"$filename" >"$realOut"
+  fi
 
   if [ "$(diff "$targetOut" "$realOut")" == "" ]; then
     testsPassed+=("$testName")

@@ -66,28 +66,28 @@ CommandError handleCmdDel
         (char **args, DataHolder dataHolder, char **resultMsg) {
     *resultMsg = "OK";
 
-    if (strcmp(args[0], "") == 0) {
+    int argsCount = 0;
+
+    while (argsCount < COMMAND_ARGS_COUNT_MAX &&
+    strcmp(args[argsCount], "") != 0) {
+            argsCount++;
+    }
+
+    if (argsCount == 0) {
         dataHolderRemoveAllEntries(dataHolder);
         return COMMAND_ERR_SUCCESS;
     }
 
-    DataHolder previousDepthHolder, currentDepthHolder = dataHolder;
-    char *lastArg;
+    DataHolder currentHolder = dataHolder;
 
-    for (int i = 0; i < COMMAND_ARGS_COUNT_MAX; i++) {
-        if (strcmp(args[i], "") == 0)
-            break;
+    for (int i = 0; i < argsCount - 1; i++) {
+        currentHolder = dataHolderFindEntry(currentHolder, args[i]);
 
-        lastArg = args[i];
-
-        previousDepthHolder = currentDepthHolder;
-        currentDepthHolder = dataHolderFindEntry(previousDepthHolder, args[i]);
-
-        if (currentDepthHolder == NULL)
+        if (currentHolder == NULL)
             return COMMAND_ERR_SUCCESS;
     }
 
-    dataHolderRemoveEntry(previousDepthHolder, lastArg);
+    dataHolderRemoveEntry(currentHolder, args[argsCount - 1]);
 
     return COMMAND_ERR_SUCCESS;
 }

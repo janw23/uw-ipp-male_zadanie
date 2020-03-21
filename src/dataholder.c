@@ -117,12 +117,94 @@ DataHolder dataHolderAddEntry(DataHolder dataHolder, char *entryName) {
     }
 }
 
+void removeCaseTargetHasNullChild(DataHolder *targetPtr) {
+    assert((*targetPtr)->leftChild == NULL || (*targetPtr)->rightChild == NULL);
+
+    DataHolder target = *targetPtr;
+
+    if (target->rightChild == NULL) {
+        *targetPtr = target->leftChild;
+    } else {
+        *targetPtr = target->rightChild;
+    }
+
+    target->rightChild = target->leftChild = NULL;
+    dataHolderDestroy(target);
+}
+
+void removeCaseTargetHasBothChildren(DataHolder *targetPtr) {
+    assert((*targetPtr)->leftChild != NULL && (*targetPtr)->rightChild != NULL);
+
+    //najbardziej lewy syn prawego syna targeta
+    //albo sam prawy syn targeta jeśli nie ma "bardziej lewego" syna
+    DataHolder *leftmostPtr = &((*targetPtr)->rightChild);
+
+    while ((*leftmostPtr)->leftChild != NULL)
+        leftmostPtr = &((*leftmostPtr)->leftChild);
+
+    DataHolder leftmost = *leftmostPtr;
+    DataHolder target = *targetPtr;
+
+    assert(leftmost->leftChild == NULL);
+
+    *leftmostPtr = leftmost->rightChild;
+
+    leftmost->rightChild = target->rightChild;
+    leftmost->leftChild = target->leftChild;
+
+    *targetPtr = leftmost;
+
+    target->rightChild = target->leftChild = NULL;
+    dataHolderDestroy(target);
+}
+
 void dataHolderRemoveEntry(DataHolder dataHolder, char *entryName) {
-    assert(0);
+    assert(dataHolder != NULL);
+
+    DataHolder *targetPtr = &(dataHolder->nextDepthChild);
+
+    //znajdowanie wskaźnika na obiekt, który należy usunąć
+    //żeby modyfikacje zmieniały się również w jego rodzicu
+    while (*targetPtr != NULL) {
+        int nameCompareResult = compareStrings((*targetPtr)->name, entryName);
+
+        if (nameCompareResult == 0)
+            break;
+
+        if (nameCompareResult == 1) {
+            targetPtr = &((*targetPtr)->rightChild);
+
+        } else if (nameCompareResult == -1) {
+            targetPtr = &((*targetPtr)->leftChild);
+        }
+    }
+
+    //nie trzeba usuwac czegoś, co nie istnieje
+    if (*targetPtr == NULL)
+        return;
+
+    if ((*targetPtr)->leftChild == NULL && (*targetPtr)->rightChild == NULL) {
+        dataHolderDestroy(*targetPtr);
+        *targetPtr = NULL;  //zmiana powinna zajść też w rodzicu targeta
+
+        return;;
+    }
+
+    if ((*targetPtr)->leftChild == NULL || (*targetPtr)->rightChild == NULL) {
+        removeCaseTargetHasNullChild(targetPtr);
+
+    } else {
+        removeCaseTargetHasBothChildren(targetPtr);
+    }
 }
 
 void dataHolderRemoveAllEntries(DataHolder dataHolder) {
-    assert(0);
+    assert(dataHolder != NULL);
+
+    if (dataHolder->nextDepthChild != NULL) {
+        dataHolderDestroy(dataHolder->nextDepthChild);
+        dataHolder->nextDepthChild = NULL;
+    }
 }
 
 //Zwraca DataHolder o nazwie [entryName] albo NULL jeśli takiego nie ma

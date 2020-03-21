@@ -220,8 +220,8 @@ def genTestWrongCmdName():
 
 
 def genNextTest():
-    genTestOption = randint(0, 0)  # test którego z dostępnych poleceń ma zostać wygenerowany
-    genTestCorrect = randint(0, 1)  # czy ma zostać wygenerowana poprawna, czy błędna wersja testu
+    genTestOption = randint(0, 2)  # test którego z dostępnych poleceń ma zostać wygenerowany
+    genTestCorrect = randint(1, 1)  # czy ma zostać wygenerowana poprawna, czy błędna wersja testu
 
     if genTestOption == 0:
         if genTestCorrect == 1:
@@ -259,7 +259,7 @@ def genNextTest():
 
 printDebug("Generating test package number #" + str(testID))
 
-generateTestsCount = 200000  # randint(1, 20000)  # 2 ** 10)
+generateTestsCount = 100000  # randint(1, 20000)  # 2 ** 10)
 
 for testNumber in range(generateTestsCount):
     genNextTest()
