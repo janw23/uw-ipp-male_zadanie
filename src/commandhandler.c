@@ -44,7 +44,7 @@ CommandError printInCaseOfError(CommandError err) {
 }
 
 CommandError handleCmdAdd
-(char **args, DataHolder dataHolder, char **resultMsg) {
+        (char **args, DataHolder dataHolder, char **resultMsg) {
     if (strcmp(args[0], "") == 0)
         return COMMAND_ERR_CMD_TOO_FEW_ARGS;
 
@@ -63,7 +63,7 @@ CommandError handleCmdAdd
 }
 
 CommandError handleCmdDel
-(char **args, DataHolder dataHolder, char **resultMsg) {
+        (char **args, DataHolder dataHolder, char **resultMsg) {
     *resultMsg = "OK";
 
     if (strcmp(args[0], "") == 0) {
@@ -93,7 +93,7 @@ CommandError handleCmdDel
 }
 
 CommandError handleCmdPrint
-(char **args, DataHolder dataHolder, char **resultMsg) {
+        (char **args, DataHolder dataHolder, char **resultMsg) {
     *resultMsg = "";
 
     DataHolder currentDepthHolder = dataHolder;
@@ -117,7 +117,7 @@ CommandError handleCmdPrint
 }
 
 CommandError handleCmdCheck
-(char **args, DataHolder dataHolder, char **resultMsg) {
+        (char **args, DataHolder dataHolder, char **resultMsg) {
     if (strcmp(args[0], "") == 0)
         return COMMAND_ERR_CMD_TOO_FEW_ARGS;
 
@@ -141,7 +141,7 @@ CommandError handleCmdCheck
 }
 
 CommandError chooseCorrectHandling
-(Command cmd, DataHolder dataHolder, char **resultMsg) {
+        (Command cmd, DataHolder dataHolder, char **resultMsg) {
     switch (cmd.code) {
         case COMMAND_CODE_ADD:
             return handleCmdAdd(cmd.args, dataHolder, resultMsg);
@@ -170,10 +170,6 @@ char *handleCommand(char *cmdText, DataHolder dataHolder) {
     if (err != COMMAND_ERR_SUCCESS)
         goto handleError;
 
-    //DEBUG
-    fprintf(stderr, "cmd = [name: %s, code: %d, args: %s, %s, %s]\n",
-            cmdPtr->name, cmdPtr->code, cmdPtr->args[0], cmdPtr->args[1], cmdPtr->args[2]);
-
     char *resultMsg = NULL;
 
     err = chooseCorrectHandling(*cmdPtr, dataHolder, &resultMsg);
@@ -191,6 +187,6 @@ char *handleCommand(char *cmdText, DataHolder dataHolder) {
     if (err == COMMAND_ERR_IGNORE_LINE)
         return "";
 
-    printInCaseOfError(err);
+    //printInCaseOfError(err);
     return "ERROR";
 }

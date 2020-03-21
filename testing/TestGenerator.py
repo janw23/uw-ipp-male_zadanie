@@ -27,9 +27,11 @@ dataHolder = {}
 # znane znaki białe
 whitespaces = " "  # " \t\v\f\r"
 
-#nieprawdiłowe znaki (które nie powinny być przyjmowane przez program)
+# nieprawdiłowe znaki (które nie powinny być przyjmowane przez program)
 wrongCharacters = ""
-#for ch in range(30, 33):
+
+
+# for ch in range(30, 33):
 #    if ch != 10:    #pomijanie \n
 #        wrongCharacters += chr(ch)
 
@@ -40,8 +42,8 @@ def string_gen(size=2, chars=string.ascii_lowercase + string.ascii_uppercase + s
 
 
 def printDebug(msg):
-    print(msg)
-    #pass
+    #print(msg)
+    pass
 
 
 def addWhitespacesToCommand(cmd):
@@ -62,14 +64,17 @@ def writeCommandToInput(cmd):
 def writeResultToOutput(result):
     generatedOutputTargetFile.write(result)
 
+
 def genCommandArgs(cmd, argsCount):
     for i in range(argsCount):
-        cmd.append(string_gen())
+        cmd.append(string_gen(size=2, chars=string.ascii_uppercase))
+
 
 def genWrongCommandArgs(cmd, argsCount):
     for i in range(argsCount):
         cmd.append(string_gen(
             chars=string.ascii_lowercase + string.ascii_uppercase + string.digits + "#" + wrongCharacters))
+
 
 def genTestCmdAddCorrect():
     printDebug("Generating CORRECT ADD command test")
@@ -103,7 +108,7 @@ def genTestCmdAddWrong():
     # czy zbyt dużej liczbie argumentów
     argsCount = 0
     if randint(0, 1) == 1:
-        argsCount = randint(4, 100)
+        argsCount = randint(4, 10)
 
     genWrongCommandArgs(cmd, argsCount)
 
@@ -126,11 +131,13 @@ def genTestCmdDelCorrect():
     if argsCount == 0:
         currentHolder.clear()
     else:
-        for name in cmd[1:-1]:
-            if name in currentHolder:
-                currentHolder = currentHolder[name]
-                if name == cmd[-1]:
-                    currentHolder.clear()
+        for i in range(1, argsCount + 1):
+            if cmd[i] in currentHolder:
+                if i == argsCount:
+                    del currentHolder[cmd[i]]
+                    break
+
+                currentHolder = currentHolder[cmd[i]]
             else:
                 break
 
@@ -145,7 +152,7 @@ def genTestCmdDelWrong():
 
     cmd = ["DEL"]
 
-    argsCount = randint(4, 100)
+    argsCount = randint(4, 10)
     genWrongCommandArgs(cmd, argsCount)
 
     writeCommandToInput(cmd)
@@ -169,18 +176,35 @@ def genTestCmdCheckCorrect():
     genCommandArgs(cmd, argsCount)
 
     currentHolder = dataHolder
+    found = False
 
-    for name in cmd[1:-1]: #może powodować błað bo ostatni wpis może być taki, jak pierwszy; w DEL to samo
-        if name in currentHolder:
-            currentHolder = currentHolder[name]
-            if name
+    for i in range(1, argsCount + 1):
+        arg = cmd[i]
+
+        if arg in currentHolder:
+            currentHolder = currentHolder[arg]
+            if i == argsCount:
+                found = True
+        else:
+            break
 
     writeCommandToInput(cmd)
-    writeResultToOutput("OK\n")
+    writeResultToOutput("YES\n" if found else "NO\n")
 
 
 def genTestCmdCheckWrong():
-    pass
+    printDebug("Generating WRONG CHECK command test")
+
+    cmd = ["CHECK"]
+
+    argsCount = 0
+    if randint(0, 1) == 1:
+        argsCount = randint(4, 10)
+
+    genWrongCommandArgs(cmd, argsCount)
+
+    writeCommandToInput(cmd)
+    writeResultToOutput("ERROR\n")
 
 
 def genTestWhitespaceOnly():
@@ -196,7 +220,7 @@ def genTestWrongCmdName():
 
 
 def genNextTest():
-    genTestOption = randint(0, 1)  # test którego z dostępnych poleceń ma zostać wygenerowany
+    genTestOption = randint(0, 2)  # test którego z dostępnych poleceń ma zostać wygenerowany
     genTestCorrect = randint(0, 1)  # czy ma zostać wygenerowana poprawna, czy błędna wersja testu
 
     if genTestOption == 0:
@@ -213,15 +237,15 @@ def genNextTest():
 
     elif genTestOption == 2:
         if genTestCorrect == 1:
-            genTestCmdPrintCorrect()
-        else:
-            genTestCmdPrintWrong()
-
-    elif genTestOption == 3:
-        if genTestCorrect == 1:
             genTestCmdCheckCorrect()
         else:
             genTestCmdCheckWrong()
+
+    elif genTestOption == 3:
+        if genTestCorrect == 1:
+            genTestCmdPrintCorrect()
+        else:
+            genTestCmdPrintWrong()
 
     elif genTestOption == 4:
         genTestWhitespaceOnly()
@@ -232,9 +256,10 @@ def genNextTest():
     elif genTestOption == 6:
         genTestWrongCmdName()
 
+
 printDebug("Generating test package number #" + str(testID))
 
-generateTestsCount = 2000#randint(1, 20000)  # 2 ** 10)
+generateTestsCount = 200000  # randint(1, 20000)  # 2 ** 10)
 
 for testNumber in range(generateTestsCount):
     genNextTest()

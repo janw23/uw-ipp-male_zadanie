@@ -36,7 +36,6 @@ void dataHolderCreate(DataHolder *dataHolderPtr, char *name) {
     (*dataHolderPtr)->isRightChild = 0;
     (*dataHolderPtr)->subHolder = NULL;
     (*dataHolderPtr)->overHolder = NULL;
-
 }
 
 //usuwa [dataHolder] z pominięciem [dataHolder->left] i [dataHolder->right]
@@ -48,17 +47,16 @@ void dataHolderDestroyKeepChildren(DataHolder dataHolder) {
         if (dataHolder->isRightChild) {
             dataHolder->parent->right = NULL;
         } else {
-            dataHolder->left = NULL;
+            dataHolder->parent->left = NULL;
         }
     }
 
     if (dataHolder->overHolder != NULL)
         dataHolder->overHolder->subHolder = NULL;
 
-    free(dataHolder->name);
-
     dataHolderDestroy(dataHolder->subHolder);
 
+    free(dataHolder->name);
     free(dataHolder);
 }
 
@@ -100,13 +98,16 @@ int compareStrings(char *a, char *b) {
     if (compareResult > 0)
         return 1;
 
-    if(compareResult < 0)
+    if (compareResult < 0)
         return -1;
 
     return 0;
 }
 
 void swapDataHolders(DataHolder a, DataHolder b) {
+    assert(a != NULL);
+    assert(b != NULL);
+
     struct DataEntry aCopy = *a;
 
     a->parent = b->parent;
@@ -212,11 +213,101 @@ DataHolder dataHolderGetLeftmostChild(DataHolder dataHolder) {
     }
 }
 
-//TUTAJ MOGA BYĆ BŁĘDY Z POINTERAMI
+//procedura usuwania targetHoldera, jeśli jedno z jego dzieci jest NULL
+void removeCaseTargetsChildIsNull(DataHolder target) {
+    assert(target->left != NULL || target->right != NULL);
+
+    //targetsChild to to dziecko, które nie jest NULL
+    DataHolder targetsChild =
+            (target->left != NULL ? target->left : target->right);
+
+    assert(targetsChild != NULL);
+
+    //Syn ojca targeta zaczyna wskazywać na odpowiedniego syna targeta
+    if (target->parent != NULL) {
+        if (target->isRightChild) {
+            target->parent->right = targetsChild;
+        } else {
+            target->parent->left = targetsChild;
+        }
+    }
+
+    if (target->overHolder != NULL)
+        target->overHolder->subHolder = targetsChild;
+
+    targetsChild->parent = target->parent;
+    targetsChild->overHolder = target->overHolder;
+
+    targetsChild->isRightChild = target->isRightChild;
+
+    target->parent = NULL;
+    target->left = target->right = NULL;
+    target->overHolder = NULL;
+
+    dataHolderDestroy(target);
+}
+
+//procedura usuwania targeta w przypadku, gdy oba jego dzieci istnieją
+void removeCaseTargetsChildrenNotNull(DataHolder target) {
+    assert(target->left != NULL && target->right != NULL);
+
+    DataHolder leftmost = dataHolderGetLeftmostChild(target->right);
+
+    assert(leftmost->left == NULL);
+    assert(leftmost->parent != NULL);
+    assert(leftmost->overHolder == NULL);
+
+    //przepinanie między leftmost a synem i ojcem leftmost
+
+    //na wypadek, jeśli leftmost to target->right
+    if (leftmost->isRightChild) {
+        leftmost->parent->right = leftmost->right;
+    } else {
+        leftmost->parent->left = leftmost->right;
+    }
+
+    if (leftmost->right != NULL) {
+        leftmost->right->isRightChild = leftmost->isRightChild;
+        leftmost->right->parent = leftmost->parent;
+    }
+
+    //przepinanie między leftmost a target
+
+    if (target->parent != NULL) {
+        if (target->isRightChild) {
+            target->parent->right = leftmost;
+        } else {
+            target->parent->left = leftmost;
+        }
+    }
+
+    if (target->overHolder != NULL)
+        target->overHolder->subHolder = leftmost;
+
+    leftmost->isRightChild = target->isRightChild;
+
+    leftmost->parent = target->parent;
+    leftmost->overHolder = target->overHolder;
+
+    leftmost->right = target->right;
+    leftmost->left = target->left;
+
+    //target->right może stać się prawym synem leftmost i być NULL
+    if (target->right != NULL)
+        target->right->parent = leftmost;
+
+    assert(target->left != NULL);
+    target->left->parent = leftmost;
+
+    target->parent = NULL;
+    target->overHolder = NULL;
+    target->left = target->right = NULL;
+
+    dataHolderDestroy(target);
+}
+
 void dataHolderRemoveEntry(DataHolder dataHolder, char *entryName) {
     assert(dataHolder != NULL);
-
-    fprintf(stderr, "Removing entry: %s\n", entryName);
 
     DataHolder target = dataHolderFindEntry(dataHolder, entryName);
 
@@ -229,45 +320,10 @@ void dataHolderRemoveEntry(DataHolder dataHolder, char *entryName) {
         return;
     }
 
-    //kopia potrzebna, bo poniższe wywołania swapDataHolders
-    //powodują utratę tego, na co wskazuje target albo leftMost
-    DataHolder holderCopy;
-
-    //jeśli nie ma lewego syna, to prawy syn przenoszony jest
-    //na miejsce ojca, a ojciec jest usuwany
-    if (target->left == NULL) {
-        holderCopy = target->right;
-        swapDataHolders(target, target->right);
-
-        //ojciec, który teraz jest prawym synem, wciąż wskazuje
-        //na swoje poprzednie dzieci, których błędem byłoby usunięcie
-        dataHolderDestroyKeepChildren(holderCopy);
-
-    } else if (target->right == NULL) {
-        holderCopy = target->left;
-        swapDataHolders(target, target->left);
-
-        dataHolderDestroyKeepChildren(holderCopy);   //tak jak wyżej
-
+    if (target->left == NULL || target->right == NULL) {
+        removeCaseTargetsChildIsNull(target);
     } else {
-        //jeśli obaj synowie istnieją to podmienia ojca
-        //z najbardziej lewym dzieckiem prawego syna dbając o
-        //wskaźniki na dzieci tego dziecka i usuwa oryginalnego ojca
-
-        DataHolder leftMost = dataHolderGetLeftmostChild(target->right);
-
-        leftMost->right->parent = leftMost->parent;
-
-        if (leftMost->isRightChild) {
-            leftMost->parent->right = leftMost->right;
-        } else {
-            leftMost->parent->left = leftMost->right;
-        }
-
-        swapDataHolders(target, leftMost);
-
-        //target to leftMost po zamianie
-        dataHolderDestroyKeepChildren(leftMost);
+        removeCaseTargetsChildrenNotNull(target);
     }
 }
 
@@ -275,7 +331,6 @@ void dataHolderRemoveAllEntries(DataHolder dataHolder) {
     assert(dataHolder != NULL);
 
     dataHolderDestroy(dataHolder->subHolder);
-    dataHolder->subHolder = NULL;
 }
 
 void dataHolderPrintEntryName(DataHolder dataHolder) {
