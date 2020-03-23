@@ -123,8 +123,150 @@ CommandError handleCmdPrint
     return COMMAND_ERR_SUCCESS;
 }
 
+int cmdCheckCaseMatchAnyForBothArgs
+        (char **args, int argsCount, DataHolder dataHolder) {
+
+    //tablica z wpisami pierwszego poziomu
+    DataHolder *holdersArray = NULL;
+    unsigned int holdersArraySize = 0;
+
+    holdersArraySize = dataHolderGetAllEntries(dataHolder, &holdersArray);
+
+    //jeśli dwa pierwsze argumenty to dowolne dopasowania
+    //a są tylko dwa argumenty to wystarczy sprawdzić czy istnieje
+    //jakikolwiek element
+    if (argsCount == 2) {
+        free(holdersArray);
+        return holdersArraySize > 0;
+    }
+
+    for (int i = 0; i < holdersArraySize; i++) {
+
+        //tablica z holderami drugiego poziomu
+        DataHolder *deepHoldersArray = NULL;
+        unsigned int deepHoldersArraySize = 0;
+
+        deepHoldersArraySize = dataHolderGetAllEntries
+                (holdersArray[i], &deepHoldersArray);
+
+        for (int k = 0; k < deepHoldersArraySize; k++) {
+            DataHolder found =
+                    dataHolderFindEntry(deepHoldersArray[k], args[2]);
+
+            if (found != NULL) {
+                free(deepHoldersArray);
+                free(holdersArray);
+                return 1;
+            }
+        }
+
+        free(deepHoldersArray);
+    }
+
+    free(holdersArray);
+    return 0;
+}
+
+int cmdCheckCaseMatchAnyForFirstArg
+        (char **args, int argsCount, DataHolder dataHolder) {
+
+    DataHolder *holdersArray = NULL;
+    unsigned int holdersArraySize = 0;
+
+    holdersArraySize = dataHolderGetAllEntries(dataHolder, &holdersArray);
+
+    if (argsCount == 1) {
+        free(holdersArray);
+        return holdersArraySize > 0;
+    }
+
+    for (int i = 0 ; i < holdersArraySize; i++) {
+        DataHolder found = dataHolderFindEntry(holdersArray[i], args[1]);
+
+        if (found == NULL)
+            continue;
+
+        if (argsCount == 2) {
+            free(holdersArray);
+            return 1;
+
+        } else { //argsCount == 3
+            found = dataHolderFindEntry(found, args[2]);
+
+            if (found != NULL) {
+                free(holdersArray);
+                return 1;
+            }
+        }
+    }
+
+    free(holdersArray);
+    return 0;
+}
+
+int cmdCheckCaseMatchAnyForSecondArg
+        (char **args, int argsCount, DataHolder dataHolder) {
+
+    DataHolder found = dataHolderFindEntry(dataHolder, args[0]);
+
+    if (found == NULL)
+        return 0;
+
+    DataHolder *deepHoldersArray = NULL;
+    unsigned int deepHoldersArraySize = 0;
+
+    deepHoldersArraySize =
+            dataHolderGetAllEntries(found, &deepHoldersArray);
+
+    if (argsCount == 2) {
+        free(deepHoldersArray);
+        return deepHoldersArraySize > 0;
+    }
+
+    for (int i = 0; i < deepHoldersArraySize; i++) {
+        found = dataHolderFindEntry(deepHoldersArray[i], args[2]);
+
+        if (found != NULL) {
+            free(deepHoldersArray);
+            return 1;
+        }
+    }
+
+    free(deepHoldersArray);
+    return 0;
+}
+
+//obsługuje przypadki, gdy w argumencie komendy występuje znak
+//dopasowania dowolnej nazwy
+//zwraca -1 jeśli taki znak nie wystąpił, 0 jeśli wystąpił
+//ale nie znaleziono dopasowania, 1 jeśli wystąpił i znaleziono dopasowanie
+
+int handleCmdCheckCaseMatchAny
+        (char **args, int argsCount, DataHolder dataHolder) {
+
+    assert(argsCount <= 3);
+
+    int firstMatchAny = strcmp(args[0], COMMAND_CHAR_MATCH_ANY) == 0;
+    int secondMatchAny = strcmp(args[1], COMMAND_CHAR_MATCH_ANY) == 0;
+
+    if (firstMatchAny && secondMatchAny) {
+        return cmdCheckCaseMatchAnyForBothArgs(args, argsCount, dataHolder);
+
+    } else if (secondMatchAny) {
+        return cmdCheckCaseMatchAnyForSecondArg(args, argsCount, dataHolder);
+
+    } else if (firstMatchAny) {
+        return cmdCheckCaseMatchAnyForFirstArg(args, argsCount, dataHolder);
+    }
+
+    return -1;
+}
+
 CommandError handleCmdCheck
         (char **args, DataHolder dataHolder, char **resultMsg) {
+
+    if (strcmp(args[COMMAND_ARGS_COUNT_MAX - 1], COMMAND_CHAR_MATCH_ANY) == 0)
+        return COMMAND_ERR_CMD_MATCH_ANY_AS_LAST_ARG;
 
     int argsCount = 0;
 
@@ -138,6 +280,14 @@ CommandError handleCmdCheck
 
     if (argsCount > COMMAND_ARGS_COUNT_MAX)
         return COMMAND_ERR_CMD_TOO_MANY_ARGS;
+
+    int caseMatchAnyResult =
+            handleCmdCheckCaseMatchAny(args, argsCount, dataHolder);
+
+    if (caseMatchAnyResult >= 0) {
+        *resultMsg = caseMatchAnyResult ? "YES" : "NO";
+        return COMMAND_ERR_SUCCESS;
+    }
 
     DataHolder currentHolder = dataHolder;
 

@@ -236,6 +236,52 @@ char *dataHolderGetAllEntryNamesOrdered(DataHolder dataHolder) {
     assert(0);
 }
 
+void addEntryAndChildrenToArray(
+        DataHolder dataHolder, DataHolder **arrPtr,
+        unsigned int *arrCapacity, unsigned int *arrElementsCount) {
+
+    assert(dataHolder != NULL);
+
+    if (dataHolder->leftChild != NULL) {
+        addEntryAndChildrenToArray(
+                dataHolder->leftChild, arrPtr, arrCapacity, arrElementsCount);
+    }
+
+    if (*arrElementsCount == *arrCapacity) {
+        *arrCapacity <<= 1U;
+        *arrPtr = realloc(*arrPtr, *arrCapacity * sizeof(DataHolder));
+    }
+
+    (*arrPtr)[*arrElementsCount] = dataHolder;
+    *arrElementsCount += 1;
+
+    if (dataHolder->rightChild != NULL) {
+        addEntryAndChildrenToArray(
+                dataHolder->rightChild, arrPtr, arrCapacity, arrElementsCount);
+    }
+}
+
+unsigned int dataHolderGetAllEntries
+        (DataHolder dataHolder, DataHolder **outPtr) {
+
+    assert(dataHolder != NULL);
+    assert(*outPtr == NULL);
+
+    if (dataHolder->nextDepthChild == NULL)
+        return 0;
+
+    unsigned int outCapacity = 2U << 10U;
+    unsigned int outElementsCount = 0;
+
+    *outPtr = malloc(outCapacity * sizeof(DataHolder));
+
+    addEntryAndChildrenToArray
+            (dataHolder->nextDepthChild, outPtr,
+             &outCapacity, &outElementsCount);
+
+    return outElementsCount;
+}
+
 void dataHolderPrintEntryAndChildren(DataHolder dataHolder) {
     assert(dataHolder != NULL);
 

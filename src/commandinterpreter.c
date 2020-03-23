@@ -16,7 +16,7 @@ int isCharSeparator(char ch) {
 //uznawany za poprawny znak jeśli wcześniej wystąpiły inne poprawne znaki
 int isCharValid(char ch, const int *validCharEncountered) {
     return ch >= 33 &&
-           (*validCharEncountered || ch != COMMAND_IGNORE_LINE_CHARACTER);
+           (*validCharEncountered || ch != COMMAND_CHAR_IGNORE_LINE);
 }
 
 void callocStringArray(char ***arrayPtr, int elemMaxCount, int elemMaxLenght) {
@@ -40,7 +40,7 @@ int checkForIgnoreLineCharacter(char ch, int *validCharEncountered) {
     if (isCharValid(ch, validCharEncountered))
         *validCharEncountered = 1;
 
-    return *validCharEncountered == 0 && ch == COMMAND_IGNORE_LINE_CHARACTER;
+    return *validCharEncountered == 0 && ch == COMMAND_CHAR_IGNORE_LINE;
 }
 
 //początkowa wartość wskazywana przez [componentIndex] powinna wynosić -1
