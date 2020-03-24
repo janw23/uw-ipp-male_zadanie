@@ -1,3 +1,5 @@
 /CLion_data
 .idea
 /testing/generatedTests
+/obj
+/bin
