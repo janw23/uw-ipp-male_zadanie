@@ -257,9 +257,6 @@ int handleCmdCheckCaseMatchAny
 CommandError handleCmdCheck
         (char **args, DataHolder dataHolder, char **resultMsg) {
 
-    if (strcmp(args[COMMAND_ARGS_COUNT_MAX - 1], COMMAND_CHAR_MATCH_ANY) == 0)
-        return COMMAND_ERR_CMD_MATCH_ANY_AS_LAST_ARG;
-
     int argsCount = 0;
 
     while (argsCount < COMMAND_ARGS_COUNT_MAX &&
@@ -272,6 +269,9 @@ CommandError handleCmdCheck
 
     if (argsCount > COMMAND_ARGS_COUNT_MAX)
         return COMMAND_ERR_CMD_TOO_MANY_ARGS;
+
+    if (strcmp(args[argsCount - 1], COMMAND_CHAR_MATCH_ANY) == 0)
+        return COMMAND_ERR_CMD_MATCH_ANY_AS_LAST_ARG;
 
     int caseMatchAnyResult =
             handleCmdCheckCaseMatchAny(args, argsCount, dataHolder);

@@ -1,16 +1,243 @@
 
-Running test: test#729
+Running test: test#761
 
 
 Tests passed:
-	test#729
+	test#761
 
 No tests failed :)
 
-Running test: test#122
+Running test: test#1012
 
 
 Tests passed:
-	test#122
+	test#1012
 
 No tests failed :)
+
+Running test: test#1010
+
+
+Tests passed:
+	test#1010
+
+No tests failed :)
+
+Running test: test#861
+
+
+Tests passed:
+	test#861
+
+No tests failed :)
+
+Running test: test#68
+
+
+Tests passed:
+	test#68
+
+No tests failed :)
+
+Running test: test#188
+
+
+Tests passed:
+	test#188
+
+No tests failed :)
+
+Running test: test#749
+
+
+Tests passed:
+	test#749
+
+No tests failed :)
+
+Running test: test#181
+
+
+Tests passed:
+	test#181
+
+No tests failed :)
+
+Running test: test#0
+
+
+Tests passed:
+	test#0
+
+No tests failed :)
+
+Running test: test#251
+
+
+Tests passed:
+	test#251
+
+No tests failed :)
+
+Running test: test#912
+
+
+Tests passed:
+	test#912
+
+No tests failed :)
+
+Running test: test#536
+
+
+Tests passed:
+	test#536
+
+No tests failed :)
+
+Running test: test#1020
+
+
+Tests passed:
+	test#1020
+
+No tests failed :)
+
+Running test: test#579
+
+
+Tests passed:
+	test#579
+
+No tests failed :)
+
+Running test: test#882
+
+
+Tests passed:
+	test#882
+
+No tests failed :)
+
+Running test: test#554
+
+
+Tests passed:
+	test#554
+
+No tests failed :)
+
+Running test: test#602
+
+
+Tests passed:
+	test#602
+
+No tests failed :)
+
+Running test: test#515
+
+
+Tests passed:
+	test#515
+
+No tests failed :)
+
+Running test: test#844
+
+
+Tests passed:
+	test#844
+
+No tests failed :)
+
+Running test: test#752
+
+
+Tests passed:
+	test#752
+
+No tests failed :)
+
+Running test: test#697
+
+
+Tests passed:
+	test#697
+
+No tests failed :)
+
+Running test: test#883
+
+
+Tests passed:
+	test#883
+
+No tests failed :)
+
+Running test: test#437
+
+
+Tests passed:
+	test#437
+
+No tests failed :)
+
+Running test: test#89
+
+
+Tests passed:
+	test#89
+
+No tests failed :)
+
+Running test: test#655
+
+
+Tests passed:
+	test#655
+
+No tests failed :)
+
+Running test: test#685
+
+
+Tests passed:
+	test#685
+
+No tests failed :)
+
+Running test: test#785
+
+
+Tests passed:
+	test#785
+
+No tests failed :)
+
+Running test: test#316
+
+
+Tests passed:
+	test#316
+
+No tests failed :)
+
+Running test: test#863
+
+
+Tests passed:
+	test#863
+
+No tests failed :)
+
+Running test: test#192
+
+
+Tests passed:
+	test#192
+
+No tests failed :)
+
+Running test: test#619
+

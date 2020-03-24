@@ -375,7 +375,7 @@ def genNextTest():
 
 printDebug("Generating test package number #" + str(testID))
 
-generateTestsCount = 2000000  # randint(1, 20000)  # 2 ** 10)
+generateTestsCount = 2000  # randint(1, 20000)  # 2 ** 10)
 
 for testNumber in range(generateTestsCount):
     genNextTest()
