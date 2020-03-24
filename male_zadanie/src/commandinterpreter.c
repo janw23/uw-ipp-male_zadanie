@@ -145,9 +145,9 @@ CommandError interpretCommand(const char *cmdText, Command *cmdOut) {
 
     for (int i = 0; i < commandTextLength; i++) {
         err = readNextCharOfCommand(cmdText[i],
-                (char) (i > 0 ? cmdText[i - 1] : commandSeparators[0]),
-                &validCharEncountered, cmdComponentsArray,
-                &cmdComponentIndex, &cmdComponentCharIndex);
+                                    (char) (i > 0 ? cmdText[i - 1] : commandSeparators[0]),
+                                    &validCharEncountered, cmdComponentsArray,
+                                    &cmdComponentIndex, &cmdComponentCharIndex);
 
         if (err != COMMAND_ERR_SUCCESS)
             goto handleError;

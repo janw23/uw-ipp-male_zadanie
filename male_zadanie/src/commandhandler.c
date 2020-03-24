@@ -1,10 +1,8 @@
 #include "commandhandler.h"
 #include "commandinterpreter.h"
 
-#include <stdio.h>
 #include <string.h>
 #include <malloc.h>
-#include <assert.h>
 
 #define COMMAND_CODE_ADD 0
 #define COMMAND_CODE_DEL 1
