@@ -132,14 +132,6 @@ int cmdCheckCaseMatchAnyForBothArgs
 
     holdersArraySize = dataHolderGetAllEntries(dataHolder, &holdersArray);
 
-    //jeśli dwa pierwsze argumenty to dowolne dopasowania
-    //a są tylko dwa argumenty to wystarczy sprawdzić czy istnieje
-    //jakikolwiek element
-    if (argsCount == 2) {
-        free(holdersArray);
-        return holdersArraySize > 0;
-    }
-
     for (int i = 0; i < holdersArraySize; i++) {
 
         //tablica z holderami drugiego poziomu
@@ -153,7 +145,7 @@ int cmdCheckCaseMatchAnyForBothArgs
             DataHolder found =
                     dataHolderFindEntry(deepHoldersArray[k], args[2]);
 
-            if (found != NULL) {
+            if (found != NULL || argsCount == 2) {
                 free(deepHoldersArray);
                 free(holdersArray);
                 return 1;

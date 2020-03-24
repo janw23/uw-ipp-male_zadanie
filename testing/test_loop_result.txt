@@ -1,0 +1,16 @@
+
+Running test: test#729
+
+
+Tests passed:
+	test#729
+
+No tests failed :)
+
+Running test: test#122
+
+
+Tests passed:
+	test#122
+
+No tests failed :)

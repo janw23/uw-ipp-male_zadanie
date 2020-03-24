@@ -30,19 +30,20 @@ whitespaces = " "  # " \t\v\f\r"
 # nieprawdiłowe znaki (które nie powinny być przyjmowane przez program)
 wrongCharacters = ""
 
+standardCmdCharacters = string.ascii_lowercase + string.ascii_uppercase + string.digits
+
 
 # for ch in range(30, 33):
 #    if ch != 10:    #pomijanie \n
 #        wrongCharacters += chr(ch)
 
-
 # źródło https://stackoverflow.com/questions/2257441/random-string-generation-with-upper-case-letters-and-digits
-def string_gen(size=2, chars=string.ascii_lowercase + string.ascii_uppercase + string.digits + "#"):
+def string_gen(size=2, chars=standardCmdCharacters):
     return ''.join(random.choice(chars) for _ in range(size))
 
 
 def printDebug(msg):
-    #print(msg)
+    # print(msg)
     pass
 
 
@@ -67,13 +68,13 @@ def writeResultToOutput(result):
 
 def genCommandArgs(cmd, argsCount):
     for i in range(argsCount):
-        cmd.append(string_gen(size=2, chars=string.ascii_uppercase))
+        cmd.append(string_gen(size=randint(1, 2), chars=string.ascii_uppercase))
 
 
 def genWrongCommandArgs(cmd, argsCount):
     for i in range(argsCount):
-        cmd.append(string_gen(
-            chars=string.ascii_lowercase + string.ascii_uppercase + string.digits + "#" + wrongCharacters))
+        cmd.append(string_gen(size=randint(1, 2),
+                              chars=standardCmdCharacters+ "#*" + wrongCharacters))
 
 
 def genTestCmdAddCorrect():
@@ -181,9 +182,10 @@ def genTestCmdPrintCorrect():
 
     if found:
         for name in sorted(currentHolder.keys()):
-            writeResultToOutput(name+"\n")
+            writeResultToOutput(name + "\n")
 
     writeCommandToInput(cmd)
+
 
 def genTestCmdPrintWrong():
     printDebug("Generating WRONG PRINT command test")
@@ -199,6 +201,53 @@ def genTestCmdPrintWrong():
     writeResultToOutput("ERROR\n")
 
 
+def cmdCheckCorrectCaseBothMatchAny(cmd):
+    argsCount = len(cmd) - 1
+    cmd[1] = cmd[2] = "*"
+
+    for elem in dataHolder.values():
+        for delem in elem.values():
+            if argsCount == 2:
+                return True
+            elif cmd[3] in delem:
+                return True
+
+    return False
+
+
+def cmdCheckCorrectCaseFirstMatchAny(cmd):
+    argsCount = len(cmd) - 1
+    cmd[1] = "*"
+
+    for elem in dataHolder.values():
+        if argsCount == 1:
+            return True
+        else:
+            if cmd[2] in elem:
+                currentHolder = elem[cmd[2]]
+
+                if argsCount == 2 or cmd[3] in currentHolder:
+                    return True
+
+    return False
+
+
+def cmdCheckCorrectCaseSecondMatchAny(cmd):
+    argsCount = len(cmd) - 1
+    cmd[2] = "*"
+
+    if cmd[1] not in dataHolder:
+        return False
+
+    currentHolder = dataHolder[cmd[1]]
+
+    for delem in currentHolder.values():
+        if argsCount == 2 or cmd[3] in delem:
+            return True
+
+    return False
+
+
 def genTestCmdCheckCorrect():
     printDebug("Generating CORRECT CHECK command test")
 
@@ -207,18 +256,30 @@ def genTestCmdCheckCorrect():
     argsCount = randint(1, 3)
     genCommandArgs(cmd, argsCount)
 
-    currentHolder = dataHolder
-    found = False
+    optionRand = randint(1, 20)
 
-    for i in range(1, argsCount + 1):
-        arg = cmd[i]
+    if optionRand == 1 and argsCount >= 2:
+        found = cmdCheckCorrectCaseBothMatchAny(cmd)
 
-        if arg in currentHolder:
-            currentHolder = currentHolder[arg]
-            if i == argsCount:
-                found = True
-        else:
-            break
+    elif optionRand == 2:
+        found = cmdCheckCorrectCaseFirstMatchAny(cmd)
+
+    elif optionRand == 3 and argsCount >= 2:
+        found = cmdCheckCorrectCaseSecondMatchAny(cmd)
+
+    else:
+        currentHolder = dataHolder
+        found = False
+
+        for i in range(1, argsCount + 1):
+            arg = cmd[i]
+
+            if arg in currentHolder:
+                currentHolder = currentHolder[arg]
+                if i == argsCount:
+                    found = True
+            else:
+                break
 
     writeCommandToInput(cmd)
     writeResultToOutput("YES\n" if found else "NO\n")
@@ -235,24 +296,47 @@ def genTestCmdCheckWrong():
 
     genWrongCommandArgs(cmd, argsCount)
 
+    if argsCount >= 3 and randint(1, 10) == 1:
+        cmd[3] = "*"
+        if randint(0, 1) == 1:
+            cmd = cmd[:4]
+
     writeCommandToInput(cmd)
     writeResultToOutput("ERROR\n")
 
 
 def genTestWhitespaceOnly():
-    pass
+    cmd = [string_gen(randint(1, 10), whitespaces)]
+    writeCommandToInput(cmd)
 
 
 def genTestLineToIgnore():
-    pass
+    cmd = ["#"]
+
+    argsCount = randint(0, 10)
+    genWrongCommandArgs(cmd, argsCount)
+
+    writeCommandToInput(cmd)
 
 
 def genTestWrongCmdName():
-    pass
+    properNames = ["ADD", "DEL", "CHECK", "PRINT"]
+    while True:
+        name = string_gen(randint(1, 10))
+        if name not in properNames:
+            break
+
+    cmd = [name]
+    argsCount = randint(0, 10)
+
+    genWrongCommandArgs(cmd, argsCount)
+
+    writeCommandToInput(cmd)
+    writeResultToOutput("ERROR\n")
 
 
 def genNextTest():
-    genTestOption = randint(0, 3)  # test którego z dostępnych poleceń ma zostać wygenerowany
+    genTestOption = randint(0, 6)  # test którego z dostępnych poleceń ma zostać wygenerowany
     genTestCorrect = randint(0, 1)  # czy ma zostać wygenerowana poprawna, czy błędna wersja testu
 
     if genTestOption == 0:
@@ -291,7 +375,7 @@ def genNextTest():
 
 printDebug("Generating test package number #" + str(testID))
 
-generateTestsCount = 1000000  # randint(1, 20000)  # 2 ** 10)
+generateTestsCount = 2000000  # randint(1, 20000)  # 2 ** 10)
 
 for testNumber in range(generateTestsCount):
     genNextTest()
