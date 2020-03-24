@@ -1,3 +1,6 @@
+#ifndef COMMAND_HANDLER_H
+#define COMMAND_HANDLER_H
+
 #include "dataholder.h"
 
 #define COMMAND_ERR_SUCCESS 0
@@ -29,3 +32,5 @@ extern const Command knownCommands[KNOWN_COMMANDS_COUNT];
 extern const char commandSeparators[KNOWN_COMMAND_SEPARATORS_COUNT];
 
 char *handleCommand(char *cmdText, DataHolder dataHolder);
+
+#endif /* COMMAND_HANDLER_H */

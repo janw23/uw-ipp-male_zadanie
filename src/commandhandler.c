@@ -1,4 +1,5 @@
-#include "commandinterpreter.h" //zawiera "commandhandler.h"
+#include "commandhandler.h"
+#include "commandinterpreter.h"
 
 #include <stdio.h>
 #include <string.h>
@@ -132,7 +133,7 @@ int cmdCheckCaseMatchAnyForBothArgs
 
     holdersArraySize = dataHolderGetAllEntries(dataHolder, &holdersArray);
 
-    for (int i = 0; i < holdersArraySize; i++) {
+    for (unsigned int i = 0; i < holdersArraySize; i++) {
 
         //tablica z holderami drugiego poziomu
         DataHolder *deepHoldersArray = NULL;
@@ -141,7 +142,7 @@ int cmdCheckCaseMatchAnyForBothArgs
         deepHoldersArraySize = dataHolderGetAllEntries
                 (holdersArray[i], &deepHoldersArray);
 
-        for (int k = 0; k < deepHoldersArraySize; k++) {
+        for (unsigned int k = 0; k < deepHoldersArraySize; k++) {
             DataHolder found =
                     dataHolderFindEntry(deepHoldersArray[k], args[2]);
 
@@ -172,7 +173,7 @@ int cmdCheckCaseMatchAnyForFirstArg
         return holdersArraySize > 0;
     }
 
-    for (int i = 0 ; i < holdersArraySize; i++) {
+    for (unsigned int i = 0; i < holdersArraySize; i++) {
         DataHolder found = dataHolderFindEntry(holdersArray[i], args[1]);
 
         if (found == NULL)
@@ -215,7 +216,7 @@ int cmdCheckCaseMatchAnyForSecondArg
         return deepHoldersArraySize > 0;
     }
 
-    for (int i = 0; i < deepHoldersArraySize; i++) {
+    for (unsigned int i = 0; i < deepHoldersArraySize; i++) {
         found = dataHolderFindEntry(deepHoldersArray[i], args[2]);
 
         if (found != NULL) {
@@ -343,6 +344,5 @@ char *handleCommand(char *cmdText, DataHolder dataHolder) {
     if (err == COMMAND_ERR_IGNORE_LINE)
         return "";
 
-    //printInCaseOfError(err);
     return "ERROR";
 }

@@ -7,6 +7,7 @@
 //usuwa warning "implicit declaration of getline()"
 //źródło: stackoverflow.com/questions/59014090/warning-implicit-declaration-of-function-getline
 #define _POSIX_C_SOURCE 200809L
+
 #include <stdio.h>
 
 #include <stdlib.h>
@@ -25,8 +26,10 @@ void handleInput(DataHolder dataHolder) {
 
         char *reply = handleCommand(cmd, dataHolder);
 
-        if (strlen(reply) > 0)
-            printf("%s\n", reply);
+        if (strlen(reply) > 0) {
+            fprintf(strcmp(reply, "ERROR") == 0 ? stderr : stdout,
+                    "%s\n", reply);
+        }
     }
 
     free(buffer);

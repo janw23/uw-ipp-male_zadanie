@@ -230,12 +230,6 @@ DataHolder dataHolderFindEntry(DataHolder dataHolder, char *entryName) {
     return currentHolder;
 }
 
-//PO UŻYCIU TEJ FUNKCJI NALEŻY ZWOLNIĆ
-//PAMIĘĆ NA KTÓRĄ WSKAZUJE ZWRÓCONY WSKAŹNIK
-char *dataHolderGetAllEntryNamesOrdered(DataHolder dataHolder) {
-    assert(0);
-}
-
 void addEntryAndChildrenToArray(
         DataHolder dataHolder, DataHolder **arrPtr,
         unsigned int *arrCapacity, unsigned int *arrElementsCount) {

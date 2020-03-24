@@ -1,5 +1,8 @@
-//Definicja typu DataHolder
-// służy przechowywaniu elementów postaci ciągu znaków
+//Definicja typu DataHolder, który służy
+//przechowywaniu elementów postaci ciągu znaków
+
+#ifndef DATA_HOLDER_H
+#define DATA_HOLDER_H
 
 struct DataEntry;
 
@@ -32,3 +35,5 @@ unsigned int dataHolderGetAllEntries
 char *dataHolderGetAllEntryNamesOrdered(DataHolder dataHolder);
 
 void dataHolderPrintAllEntriesOrdered(DataHolder dataHolder);
+
+#endif /* DATA_HOLDER_H */
