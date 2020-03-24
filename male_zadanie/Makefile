@@ -7,13 +7,19 @@ CFLAGS=-Wall -Wextra -std=c11 -O2
 VPATH=src/ bin/ obj/
 
 SRCS=forests.c dataholder.c commandinterpreter.c commandhandler.c
-OBJS=$(SRCS:.c=.o)
 DEPS=$(SRCS:.c=.d)
+OBJS=$(SRCS:.c=.o)
 
 all: forests
 
+%.d: %.c
+	gcc -MM -MT '$(@:.d=.o)' $< > obj/$@
+
 .c.o:
 	$(CC) $(CFLAGS) -c -o obj/$*.o  $<
+
+forests: bin obj $(OBJS) $(DEPS)
+	$(CC) $(CFLAGS) -o bin/forests $(addprefix obj/, $(OBJS))
 
 bin:
 	@-mkdir bin
@@ -21,19 +27,6 @@ bin:
 obj:
 	@-mkdir obj
 
-forests: bin obj $(OBJS)
-	$(CC) $(CFLAGS) -o bin/forests $(addprefix obj/, $(OBJS))
-
-#www.gnu.org/software/make/manual/html_node/Automatic-Prerequisites.html
-obj/%.d: %.c
-	$(CC) -MM -MT $(notdir $(@:.d=.o)) $< > $@
-
-#pomija wywołanie 'include' dla make clean
-ifneq ($(MAKECMDGOALS), clean)
--include $(addprefix obj/, $(DEPS))
-endif
-
-.PHONY: clean
 clean:
 	-rm bin/forests
 	-rm $(addprefix obj/, $(OBJS))

@@ -32,5 +32,4 @@ extern const char commandSeparators[KNOWN_COMMAND_SEPARATORS_COUNT];
 
 char *handleCommand(char *cmdText, DataHolder dataHolder);
 
-
 #endif /* COMMAND_HANDLER_H */
